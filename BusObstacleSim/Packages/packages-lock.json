@@ -1,5 +1,14 @@
 {
   "dependencies": {
+    "com.bussim.obstacles": {
+      "version": "file:com.bussim.obstacles",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "com.unity.splines": "2.9.1",
+        "com.unity.inputsystem": "1.20.0"
+      }
+    },
     "com.coplaydev.unity-mcp": {
       "version": "https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#v10.0.0",
       "depth": 0,

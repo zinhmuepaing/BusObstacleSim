@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 697e6fa478e9e1c4bba3e5fb15ce994b, type: 3}
+  m_Name: Hard
+  m_EditorClassIdentifier: BusSim.Runtime::BusSim.Spawning.DifficultyProfile
+  profileName: Hard
+  difficultyLevel: 2
+  eventsPerKm: 14
+  minGap: 40
+  spacingJitter: 0.5
+  startBuffer: 80
+  endBuffer: 50
+  definitions:
+  - {fileID: 11400000, guid: 1abb46a92816d4346bda9015d37debc2, type: 2}
+  - {fileID: 11400000, guid: 6d7b8ee58d8f18d40933355fd93013a0, type: 2}
+  - {fileID: 11400000, guid: a3c086276c94f3244a3d4a51a55eee7c, type: 2}
+  - {fileID: 11400000, guid: 986e70135eb956c459096bb99b43e1f9, type: 2}
+  - {fileID: 11400000, guid: 4d89fcd1c4870eb45addd2bccd296da6, type: 2}
+  - {fileID: 11400000, guid: 64a8b0297c7f8b349b63bed5e9fd9ea8, type: 2}
+  - {fileID: 11400000, guid: 2b6b2a865d2cda9448ca74e364dd1966, type: 2}
+  - {fileID: 11400000, guid: 6dec7f5bd55975d44b21b19ce52d342e, type: 2}
+  - {fileID: 11400000, guid: f049e2055a90352488e0e577f0c865a1, type: 2}
+  - {fileID: 11400000, guid: 8d8c46d740121bf4ebb782eda19d8073, type: 2}
+  - {fileID: 11400000, guid: 01ab08a406cb925469677d87601713ac, type: 2}
+  - {fileID: 11400000, guid: f51de132523fcf843b45aed927c0f27a, type: 2}
+  - {fileID: 11400000, guid: eaebd72c920c0a548abb2023c5a19f5a, type: 2}
+  - {fileID: 11400000, guid: 0bc3a1bfee472284d88d62ff3276285e, type: 2}
+  allowedCategories: 
+  weightOverrides: []

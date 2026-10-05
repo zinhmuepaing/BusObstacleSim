@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d66d4174bbc767f40b8632cc0c946044, type: 3}
+  m_Name: PED_CHILD_RUN
+  m_EditorClassIdentifier: BusSim.Runtime::BusSim.Obstacles.ObstacleDefinition
+  id: PED_CHILD_RUN
+  displayName: Child running across
+  category: 3
+  prefab: {fileID: 5843726718742004637, guid: 3fbdc1bee89ae764e873919d83e2f992, type: 3}
+  isDynamic: 1
+  dangerLevel: 5
+  footprintWidth: 0.6
+  footprintLength: 0.6
+  minT: -4.5
+  maxT: 4.5
+  placeAtRangeEndsOnly: 1
+  mirrorOnRightSide: 0
+  yawJitterDegrees: 0
+  requiredZone: 2
+  weight: 3
+  minDifficulty: 1
+  minGapAfter: 0
+  maxBlockSeconds: 4
+  triggerTimeToArrival: 2.5

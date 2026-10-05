@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d66d4174bbc767f40b8632cc0c946044, type: 3}
+  m_Name: PED_JAYWALK_ADULT
+  m_EditorClassIdentifier: BusSim.Runtime::BusSim.Obstacles.ObstacleDefinition
+  id: PED_JAYWALK_ADULT
+  displayName: Jaywalking adult
+  category: 3
+  prefab: {fileID: 6446912511948449475, guid: a8cd001e7b989fe4f82997665fbbd099, type: 3}
+  isDynamic: 1
+  dangerLevel: 4
+  footprintWidth: 0.6
+  footprintLength: 0.6
+  minT: -4.5
+  maxT: 4.5
+  placeAtRangeEndsOnly: 1
+  mirrorOnRightSide: 0
+  yawJitterDegrees: 0
+  requiredZone: 0
+  weight: 1
+  minDifficulty: 0
+  minGapAfter: 0
+  maxBlockSeconds: 6
+  triggerTimeToArrival: 3.5

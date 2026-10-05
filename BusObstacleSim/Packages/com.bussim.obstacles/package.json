@@ -1,0 +1,25 @@
+{
+  "name": "com.bussim.obstacles",
+  "version": "0.1.0",
+  "displayName": "Bus Obstacle Simulator",
+  "description": "Seeded, always-passable random road obstacles for a Singapore bus driver training simulator: spline road, obstacle catalog (cones, road works, debris, stalled and double-parked vehicles, jaywalkers, elderly crossers, cyclists, filtering motorcycles, cutting-in cars, school and bus stop hazards), clearance validator, difficulty profiles and a simple test bus.",
+  "unity": "6000.6",
+  "keywords": [
+    "obstacles",
+    "traffic",
+    "simulation",
+    "bus",
+    "training"
+  ],
+  "dependencies": {
+    "com.unity.splines": "2.9.1",
+    "com.unity.inputsystem": "1.20.0"
+  },
+  "samples": [
+    {
+      "displayName": "Demo scene",
+      "description": "How to build the demo scene with one menu command.",
+      "path": "Samples~/Demo"
+    }
+  ]
+}

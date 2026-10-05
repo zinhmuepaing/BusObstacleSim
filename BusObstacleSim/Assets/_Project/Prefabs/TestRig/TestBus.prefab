@@ -224,6 +224,15 @@ MonoBehaviour:
   fullSteerErrorDegrees: 20
   speedGain: 0.5
   stopBeforeEndMetres: 2
+  brakeForObstacles: 1
+  obstacleLayerName: Obstacles
+  reactionTimeSeconds: 1
+  assumedDeceleration: 6
+  stopMarginMetres: 3
+  busFrontOffset: 6
+  pathHalfWidth: 1.5
+  scanHalfWidth: 6
+  probeHeight: 1
 --- !u!1 &2534810478781079600
 GameObject:
   m_ObjectHideFlags: 0

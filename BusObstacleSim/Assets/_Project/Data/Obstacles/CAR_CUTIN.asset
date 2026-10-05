@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d66d4174bbc767f40b8632cc0c946044, type: 3}
+  m_Name: CAR_CUTIN
+  m_EditorClassIdentifier: BusSim.Runtime::BusSim.Obstacles.ObstacleDefinition
+  id: CAR_CUTIN
+  displayName: Car cutting in and braking
+  category: 5
+  prefab: {fileID: 7759175342209002152, guid: 3f29fca286f3d7243a74a368597d648b, type: 3}
+  isDynamic: 1
+  dangerLevel: 4
+  footprintWidth: 1.8
+  footprintLength: 4.5
+  minT: 1.75
+  maxT: 1.75
+  placeAtRangeEndsOnly: 0
+  mirrorOnRightSide: 0
+  yawJitterDegrees: 0
+  requiredZone: 0
+  weight: 0.6
+  minDifficulty: 2
+  minGapAfter: 0
+  maxBlockSeconds: 8
+  triggerTimeToArrival: 4
