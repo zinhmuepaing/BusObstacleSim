@@ -18,8 +18,8 @@ MonoBehaviour:
   prefab: {fileID: 849864505611906496, guid: 96fabd795b57d8e4abca4b9d06dde540, type: 3}
   isDynamic: 0
   dangerLevel: 3
-  footprintWidth: 1.8
-  footprintLength: 4.5
+  footprintWidth: 1.9000001
+  footprintLength: 4.2849994
   minT: -1.75
   maxT: 1.75
   placeAtRangeEndsOnly: 1

@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45b47e6337f9e704b988c6990267e031, type: 3}
+  m_Name: TrafficSettings
+  m_EditorClassIdentifier: BusSim.Runtime::BusSim.Traffic.TrafficSettings
+  sameDirectionPerKm: 5
+  oncomingPerKm: 9
+  sideRoadEntries: 3
+  minSpacing: 30
+  sameDirectionMinKmh: 25
+  sameDirectionMaxKmh: 45
+  oncomingMinKmh: 30
+  oncomingMaxKmh: 50
+  sideRoadKmh: 25
+  turnKmh: 15
+  spawnAhead: 160
+  despawnBehind: 60
+  startBuffer: 60
+  endBuffer: 40
+  entryReleaseMin: 40
+  entryReleaseMax: 260
+  sideRoadStartS: 80
+  timeHeadway: 1.5
+  minGap: 2.5
+  maxAcceleration: 2
+  comfortableBraking: 3
+  emergencyBraking: 9
+  playerLength: 4
+  acceptedGapMin: 2
+  acceptedGapMax: 5
+  stopLineS: 2.9
+  turnEndPast: 18
+  goWithin: 12
+  vehiclePrefabs:
+  - {fileID: 2537695094562394714, guid: 5fa34388263cafd48bb7fc3c84d6250f, type: 3}
+  - {fileID: 7734354401563459939, guid: ffcbe225e23975647b092c25a0c34227, type: 3}
+  - {fileID: 6698066622429967587, guid: d646db7568b5c3b4c880062fc9f8fec5, type: 3}
+  - {fileID: 8146059669139416831, guid: fdcda6e787be5aa4b8b7d6cfe5d54f97, type: 3}
+  - {fileID: 5180654736337514612, guid: 2f3a183b5f1fefd41a073555d01df574, type: 3}
+  - {fileID: 8527786418227450808, guid: d12739419cc22f24da1c4c849ec13428, type: 3}
+  - {fileID: 6216028820182821243, guid: 67cdfe668a441fc4fa4bd77c7f74710e, type: 3}
+  - {fileID: 4807125509982771066, guid: 4d34fdb701eb56a4c81292d5836eea37, type: 3}

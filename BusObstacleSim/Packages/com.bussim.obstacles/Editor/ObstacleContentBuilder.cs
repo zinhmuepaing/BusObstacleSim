@@ -51,6 +51,15 @@ namespace BusSim.Editor
         // A fallen limb must be taller than a car's ground clearance (0.3 m) to count as an obstacle.
         private const float BranchRadius = 0.22f;
         private const float BranchMass = 30f;
+        private const float BranchLength = 2.4f;
+        private const float CargoSize = 0.8f;
+        private const float CarFootprintPad = 0.1f;
+
+        // The cut-in car ends up crawling in the player's lane ahead of its event position, so keep the next obstacle clear of it.
+        private const float CutInClearAhead = 100f;
+        private const float CarLightInset = 0.25f;
+        private const float CarLightHeightShare = 0.35f;
+        private const float CarLightSize = 0.2f;
 
         // Adult proportions in metres at scale 1 (about 1.72 m tall).
         private const float HipHeight = 0.88f;
@@ -87,14 +96,14 @@ namespace BusSim.Editor
                 BuildConeCluster(),
                 BuildPedestrian(new PedestrianSpec
                 {
-                    Id = "PED_JAYWALK_ADULT", Name = "Jaywalking adult", Speed = 1.4f, Scale = 1f, Mass = AdultMass, T = footpathMiddle,
+                    Id = "PED_JAYWALK_ADULT", Name = "Jaywalking adult", Model = "character-male-a", Speed = 1.4f, Scale = 1f, Mass = AdultMass, T = footpathMiddle,
                     Shirt = new Color(0.16f, 0.35f, 0.62f), Trousers = new Color(0.18f, 0.18f, 0.2f), Hair = new Color(0.08f, 0.06f, 0.05f),
                     Trigger = 3.5f, MaxBlock = 6f, Danger = 4, MinDifficulty = 0, Weight = 1f
                 }),
                 BuildPedestrian(new PedestrianSpec
                 {
                     // 7.6 m at 0.8 m/s is 9.5 s plus a 1 s pause, so 11 s rather than the catalog's 10.
-                    Id = "PED_ELDERLY", Name = "Elderly slow crosser", Speed = 0.8f, Scale = 0.95f, Mass = 65f, T = footpathMiddle,
+                    Id = "PED_ELDERLY", Name = "Elderly slow crosser", Model = "character-female-f", Speed = 0.8f, Scale = 0.95f, Mass = 65f, T = footpathMiddle,
                     Shirt = new Color(0.55f, 0.5f, 0.42f), Trousers = new Color(0.3f, 0.28f, 0.25f), Hair = new Color(0.82f, 0.82f, 0.8f),
                     PauseChance = 0.6f, PauseSeconds = 1f, Trigger = 4.5f, MaxBlock = 11f, Danger = 5, MinDifficulty = 1, Weight = 0.6f
                 }),
@@ -108,7 +117,7 @@ namespace BusSim.Editor
                 BuildCutInCar(halfRoad),
                 BuildPedestrian(new PedestrianSpec
                 {
-                    Id = "PED_CHILD_RUN", Name = "Child running across", Speed = 2.5f, Scale = 0.72f, Mass = 35f, T = footpathMiddle,
+                    Id = "PED_CHILD_RUN", Name = "Child running across", Model = "character-male-b", Speed = 2.5f, Scale = 0.72f, Mass = 35f, T = footpathMiddle,
                     Shirt = new Color(0.9f, 0.9f, 0.92f), Trousers = new Color(0.12f, 0.2f, 0.45f), Hair = new Color(0.05f, 0.04f, 0.03f),
                     Trigger = 2.5f, MaxBlock = 4f, Danger = 5, MinDifficulty = 1, Weight = 3f, Zone = ZoneType.School
                 }),
@@ -171,15 +180,31 @@ namespace BusSim.Editor
 
             Material sign = Mat("SignOrange", new Color(1f, 0.55f, 0.05f), 0.4f);
             Material dark = Mat("DarkMetal", new Color(0.15f, 0.15f, 0.16f), 0.5f);
-            AddBox(root.transform, "SignPost", dark, new Vector3(-edge, 0.8f, SignZ), new Vector3(0.06f, 1.6f, 0.06f));
-            AddBox(root.transform, "SignBoard", sign, new Vector3(-edge, 1.75f, SignZ - 0.03f), new Vector3(0.9f, 0.9f, 0.04f));
-            AddBox(root.transform, "SignSymbol", dark, new Vector3(-edge, 1.75f, SignZ - 0.06f), new Vector3(0.35f, 0.35f, 0.02f));
+            GameObject signModel = ModelLibrary.Spawn(root.transform, ModelLibrary.Road("road-sign-warning"), ModelLibrary.SignScale, 180f, "WarningSign");
+            if (signModel != null)
+            {
+                signModel.transform.localPosition = new Vector3(-edge, 0f, SignZ);
+            }
+            else
+            {
+                AddBox(root.transform, "SignPost", dark, new Vector3(-edge, 0.8f, SignZ), new Vector3(0.06f, 1.6f, 0.06f));
+                AddBox(root.transform, "SignBoard", sign, new Vector3(-edge, 1.75f, SignZ - 0.03f), new Vector3(0.9f, 0.9f, 0.04f));
+                AddBox(root.transform, "SignSymbol", dark, new Vector3(-edge, 1.75f, SignZ - 0.06f), new Vector3(0.35f, 0.35f, 0.02f));
+            }
             AddBoxCollider(fixtures, new Vector3(-edge, 1f, SignZ), new Vector3(0.9f, 2.2f, 0.2f));
 
-            HumanParts worker = BuildHuman(root.transform, new Vector3(-0.5f, 0f, 3f), 1f,
-                Mat("HiVis", new Color(0.95f, 0.85f, 0.05f), 0.3f), Mat("WorkTrousers", new Color(0.12f, 0.14f, 0.2f), 0.2f),
-                Mat("Helmet", new Color(1f, 1f, 1f), 0.6f));
-            worker.Body.localRotation = Quaternion.Euler(0f, 140f, 0f);
+            GameObject worker = AddPerson(root.transform, "character-male-c", 1f, 140f);
+            if (worker != null)
+            {
+                worker.transform.localPosition = new Vector3(-0.5f, 0f, 3f);
+            }
+            else
+            {
+                HumanParts workerParts = BuildHuman(root.transform, new Vector3(-0.5f, 0f, 3f), 1f,
+                    Mat("HiVis", new Color(0.95f, 0.85f, 0.05f), 0.3f), Mat("WorkTrousers", new Color(0.12f, 0.14f, 0.2f), 0.2f),
+                    Mat("Helmet", new Color(1f, 1f, 1f), 0.6f));
+                workerParts.Body.localRotation = Quaternion.Euler(0f, 140f, 0f);
+            }
             AddCapsuleCollider(fixtures, new Vector3(-0.5f, PersonHeight * 0.5f, 3f), PersonRadius, PersonHeight);
             return Finish(definition, root);
         }
@@ -191,6 +216,13 @@ namespace BusSim.Editor
                 1.2f, 2.5f, -halfRoad + 0.6f, halfRoad - 0.6f, false, false, 25f, 2, 0, 0.7f);
             GameObject root = CreateRoot(definition, typeof(StaticObstacle), 0.6f);
             GameObject body = MakeBody(root.transform, "Body", BranchMass);
+            GameObject log = ModelLibrary.SpawnFitted(body.transform, ModelLibrary.Nature + "log.fbx", BranchLength, 0f, "Log", true);
+            if (log != null)
+            {
+                ModelLibrary.AddFittedBoxCollider(body, log.transform, bodyMaterial);
+                return Finish(definition, root);
+            }
+
             Material bark = Mat("Bark", new Color(0.33f, 0.22f, 0.13f), 0.1f);
             Material leaves = Mat("Leaves", new Color(0.18f, 0.38f, 0.12f), 0.1f);
             AddPrimitive(PrimitiveType.Cylinder, body.transform, "Limb", bark, new Vector3(0f, BranchRadius, 0f), new Vector3(BranchRadius * 2f, 1.15f, BranchRadius * 2f), Quaternion.Euler(90f, 0f, 0f));
@@ -210,6 +242,13 @@ namespace BusSim.Editor
                 1.15f, 1.15f, -halfRoad + 0.6f, halfRoad - 0.6f, false, false, 45f, 2, 0, 0.7f);
             GameObject root = CreateRoot(definition, typeof(StaticObstacle), 0.8f);
             GameObject body = MakeBody(root.transform, "Body", 15f);
+            GameObject crate = ModelLibrary.SpawnFitted(body.transform, ModelLibrary.Car("box"), CargoSize, 0f, "Crate", false);
+            if (crate != null)
+            {
+                ModelLibrary.AddFittedBoxCollider(body, crate.transform, bodyMaterial);
+                return Finish(definition, root);
+            }
+
             Material wood = Mat("CrateWood", new Color(0.6f, 0.45f, 0.26f), 0.15f);
             Material strap = Mat("Strap", new Color(0.2f, 0.2f, 0.22f), 0.3f);
             AddBox(body.transform, "Crate", wood, new Vector3(0f, 0.3f, 0f), new Vector3(0.75f, 0.6f, 0.6f));
@@ -222,12 +261,13 @@ namespace BusSim.Editor
         private static ObstacleDefinition BuildStalledCar(float halfRoad)
         {
             float lane = halfRoad * 0.5f;
+            Bounds size = CarBounds("suv", 1.8f, 4.5f);
             ObstacleDefinition definition = Define("STALLED_CAR", "Breakdown with hazards", ObstacleCategory.StoppedVehicle, false,
-                1.8f, 4.5f, -lane, lane, true, false, 0f, 3, 0, 0.6f);
+                size.size.x + CarFootprintPad, size.size.z + CarFootprintPad, -lane, lane, true, false, 0f, 3, 0, 0.6f);
             GameObject root = CreateRoot(definition, typeof(StaticObstacle), 1.5f);
             GameObject body = MakeParkedBody(root.transform, "Body", 1300f);
-            CarParts car = BuildCar(body.transform, 1.8f, 4.5f, new Color(0.55f, 0.56f, 0.58f), "Silver");
-            AddBoxCollider(body, new Vector3(0f, 0.75f, 0f), new Vector3(1.8f, 1.2f, 4.5f));
+            CarVisual car = AddCarVisual(body.transform, "suv", 1.8f, 4.5f, new Color(0.55f, 0.56f, 0.58f), "Silver");
+            AddBoxCollider(body, car.Bounds.center, car.Bounds.size);
             AddBlinker(root, car.Hazards);
 
             // Warning triangle 30 m behind the car (visual only, outside the footprint).
@@ -243,22 +283,16 @@ namespace BusSim.Editor
 
         private static ObstacleDefinition BuildVan(float halfRoad)
         {
+            Bounds size = CarBounds("delivery", 2f, 5.5f);
             // Double parked against the left kerb, 0.2 m off it.
-            float t = -halfRoad + 1f + 0.2f;
+            float t = -halfRoad + size.size.x * 0.5f + 0.2f;
             ObstacleDefinition definition = Define("DOUBLE_PARKED_VAN", "Delivery van double parked", ObstacleCategory.StoppedVehicle, false,
-                2f, 5.5f, t, t, false, false, 0f, 3, 1, 0.8f);
+                size.size.x + CarFootprintPad, size.size.z + CarFootprintPad, t, t, false, false, 0f, 3, 1, 0.8f);
             GameObject root = CreateRoot(definition, typeof(StaticObstacle), 2.4f);
             GameObject body = MakeParkedBody(root.transform, "Body", 2200f);
-            Material white = Mat("VanWhite", new Color(0.93f, 0.93f, 0.92f), 0.45f);
-            Material glass = Mat("Glass", new Color(0.08f, 0.1f, 0.13f), 0.85f);
-            AddBox(body.transform, "Cargo", white, new Vector3(0f, 1.35f, -0.6f), new Vector3(2f, 2.1f, 4.2f));
-            AddBox(body.transform, "Cab", white, new Vector3(0f, 1.0f, 2.05f), new Vector3(1.96f, 1.4f, 1.3f));
-            AddBox(body.transform, "Windscreen", glass, new Vector3(0f, 1.45f, 2.55f), new Vector3(1.8f, 0.6f, 0.3f));
-            AddBox(body.transform, "Livery", Mat("LiveryRed", new Color(0.75f, 0.12f, 0.12f), 0.4f), new Vector3(0f, 1.2f, -0.6f), new Vector3(2.02f, 0.25f, 4f));
-            List<Renderer> hazards = AddWheelsAndLights(body.transform, 2f, 5.5f, 0.38f, out _);
-            AddBoxCollider(body, new Vector3(0f, 1.3f, -0.4f), new Vector3(2f, 2.1f, 4.6f));
-            AddBoxCollider(body, new Vector3(0f, 0.8f, 2.05f), new Vector3(1.96f, 1.1f, 1.3f));
-            AddBlinker(root, hazards);
+            CarVisual van = AddCarVisual(body.transform, "delivery", 2f, 5.5f, new Color(0.93f, 0.93f, 0.92f), "VanWhite");
+            AddBoxCollider(body, van.Bounds.center, van.Bounds.size);
+            AddBlinker(root, van.Hazards);
             return Finish(definition, root);
         }
 
@@ -271,6 +305,29 @@ namespace BusSim.Editor
             definition.triggerTimeToArrival = 8f;
             definition.maxBlockSeconds = 3f;
             GameObject root = CreateRoot(definition, typeof(CyclistRide), 1.8f);
+
+            // Real bicycle (Quaternius, about 1.8 m long) with a seated rider character.
+            GameObject bike = ModelLibrary.SpawnFitted(root.transform, ModelLibrary.Transport + "Bicycle.fbx", BikeLength, 0f, "Bicycle", true);
+            if (bike != null)
+            {
+                GameObject rider = AddPerson(root.transform, "character-male-e", RiderScale, 0f, CharacterAnimation.RiderController());
+                if (rider != null)
+                {
+                    rider.transform.localPosition = new Vector3(0f, RiderHeightAboveGround, RiderOffsetZ);
+                }
+            }
+            else
+            {
+                BuildProceduralCyclist(root);
+            }
+
+            MakeMoverBody(root, 95f);
+            AddBoxCollider(root, new Vector3(0f, 0.85f, 0f), new Vector3(0.55f, 1.7f, 1.7f));
+            return Finish(definition, root);
+        }
+
+        private static void BuildProceduralCyclist(GameObject root)
+        {
             Material frame = Mat("BikeFrame", new Color(0.1f, 0.45f, 0.25f), 0.5f);
             Material tyre = Mat("Rubber", new Color(0.06f, 0.06f, 0.06f), 0.1f);
             Transform front = AddWheel(root.transform, "FrontWheel", tyre, new Vector3(0f, 0.34f, 0.52f), 0.34f, 0.05f);
@@ -288,9 +345,6 @@ namespace BusSim.Editor
             rider.ArmRight.localRotation = Quaternion.Euler(-55f, 0f, 0f);
             SetRef(root.GetComponent<CyclistRide>(), "frontWheel", front);
             SetRef(root.GetComponent<CyclistRide>(), "rearWheel", rear);
-            MakeMoverBody(root, 95f);
-            AddBoxCollider(root, new Vector3(0f, 0.85f, 0f), new Vector3(0.55f, 1.7f, 1.7f));
-            return Finish(definition, root);
         }
 
         private static ObstacleDefinition BuildMotorcycle()
@@ -327,32 +381,35 @@ namespace BusSim.Editor
         private static ObstacleDefinition BuildCutInCar(float halfRoad)
         {
             float lane = halfRoad * 0.5f;
+            Bounds size = CarBounds("hatchback-sports", 1.8f, 4.5f);
             ObstacleDefinition definition = Define("CAR_CUTIN", "Car cutting in and braking", ObstacleCategory.MovingVehicle, true,
-                1.8f, 4.5f, lane, lane, false, false, 0f, 4, 2, 0.6f);
+                size.size.x + CarFootprintPad, size.size.z + CarFootprintPad, lane, lane, false, false, 0f, 4, 2, 0.6f);
             definition.triggerTimeToArrival = 4f;
             definition.maxBlockSeconds = 8f;
+            definition.minGapAfter = CutInClearAhead;
             GameObject root = CreateRoot(definition, typeof(CarCutIn), 1.5f);
             Transform visual = new GameObject("Visual").transform;
             visual.SetParent(root.transform, false);
-            CarParts car = BuildCar(visual, 1.8f, 4.5f, new Color(0.1f, 0.25f, 0.55f), "Blue");
+            CarVisual car = AddCarVisual(visual, "hatchback-sports", 1.8f, 4.5f, new Color(0.1f, 0.25f, 0.55f), "Blue");
             CarCutIn behaviour = root.GetComponent<CarCutIn>();
             SetRef(behaviour, "visual", visual.gameObject);
             SetRefs(behaviour, "brakeLights", car.BrakeLights.ToArray());
             MakeMoverBody(root, 1400f);
-            AddBoxCollider(root, new Vector3(0f, 0.75f, 0f), new Vector3(1.8f, 1.2f, 4.5f));
+            AddBoxCollider(root, car.Bounds.center, car.Bounds.size);
             return Finish(definition, root);
         }
 
         private static ObstacleDefinition BuildBusStopBlock(float halfRoad)
         {
-            float t = -halfRoad + 0.9f + 0.2f;
+            Bounds size = CarBounds("taxi", 1.8f, 4.6f);
+            float t = -halfRoad + size.size.x * 0.5f + 0.2f;
             ObstacleDefinition definition = Define("BUSSTOP_BLOCK", "Vehicle blocking bus stop bay", ObstacleCategory.StoppedVehicle, false,
-                2f, 5.5f, t, t, false, false, 0f, 2, 0, 3f);
+                size.size.x + CarFootprintPad, size.size.z + CarFootprintPad, t, t, false, false, 0f, 2, 0, 3f);
             definition.requiredZone = ZoneType.BusStop;
             GameObject root = CreateRoot(definition, typeof(StaticObstacle), 1.5f);
             GameObject body = MakeParkedBody(root.transform, "Body", 1300f);
-            BuildCar(body.transform, 1.8f, 4.6f, new Color(0.08f, 0.08f, 0.09f), "Black");
-            AddBoxCollider(body, new Vector3(0f, 0.75f, 0f), new Vector3(1.8f, 1.2f, 4.6f));
+            CarVisual car = AddCarVisual(body.transform, "taxi", 1.8f, 4.6f, new Color(0.9f, 0.75f, 0.1f), "Taxi");
+            AddBoxCollider(body, car.Bounds.center, car.Bounds.size);
             return Finish(definition, root);
         }
 
@@ -364,10 +421,7 @@ namespace BusSim.Editor
             definition.triggerTimeToArrival = 4f;
             definition.maxBlockSeconds = 4f;
             GameObject root = CreateRoot(definition, typeof(PassengerRush), PersonHeight);
-            HumanParts person = BuildHuman(root.transform, Vector3.zero, 1f,
-                Mat("RushShirt", new Color(0.8f, 0.15f, 0.35f), 0.2f), Mat("RushSkirt", new Color(0.12f, 0.12f, 0.14f), 0.2f),
-                Mat("RushHair", new Color(0.1f, 0.07f, 0.05f), 0.3f));
-            root.GetComponent<WalkRig>().SetRig(person.Body, person.LegLeft, person.LegRight, person.ArmLeft, person.ArmRight);
+            AttachPerson(root, "character-female-d", 1f, new Color(0.8f, 0.15f, 0.35f), new Color(0.12f, 0.12f, 0.14f), new Color(0.1f, 0.07f, 0.05f), "Rush");
             MakeMoverBody(root, AdultMass);
             AddCapsuleCollider(root, new Vector3(0f, PersonHeight * 0.5f, 0f), PersonRadius, PersonHeight);
             return Finish(definition, root);
@@ -377,6 +431,7 @@ namespace BusSim.Editor
         {
             public string Id;
             public string Name;
+            public string Model;
             public float Speed;
             public float Scale;
             public float Mass;
@@ -403,9 +458,7 @@ namespace BusSim.Editor
             definition.triggerTimeToArrival = spec.Trigger;
             definition.maxBlockSeconds = spec.MaxBlock;
             GameObject root = CreateRoot(definition, typeof(PedestrianCrossing), PersonHeight * spec.Scale);
-            HumanParts person = BuildHuman(root.transform, Vector3.zero, spec.Scale,
-                Mat($"{spec.Id}_Shirt", spec.Shirt, 0.2f), Mat($"{spec.Id}_Trousers", spec.Trousers, 0.2f), Mat($"{spec.Id}_Hair", spec.Hair, 0.3f));
-            root.GetComponent<WalkRig>().SetRig(person.Body, person.LegLeft, person.LegRight, person.ArmLeft, person.ArmRight);
+            AttachPerson(root, spec.Model, spec.Scale, spec.Shirt, spec.Trousers, spec.Hair, spec.Id);
             root.GetComponent<PedestrianCrossing>().SetMovement(spec.Speed, spec.PauseChance, spec.PauseSeconds);
             MakeMoverBody(root, spec.Mass);
             float height = PersonHeight * spec.Scale;
@@ -543,6 +596,12 @@ namespace BusSim.Editor
             body.transform.localPosition = groundPosition;
             AddBoxCollider(body, new Vector3(0f, ConeHeight * 0.5f, 0f), new Vector3(ConeBodySize, ConeHeight, ConeBodySize));
 
+            GameObject coneModel = ModelLibrary.Spawn(body.transform, ModelLibrary.Road("construction-cone"), ModelLibrary.ConeScale, 0f, "Cone");
+            if (coneModel != null)
+            {
+                return;
+            }
+
             GameObject cone = new GameObject("Mesh");
             cone.transform.SetParent(body.transform, false);
             cone.transform.localPosition = Vector3.up * ConeFootHeight;
@@ -563,6 +622,21 @@ namespace BusSim.Editor
             board.SetParent(parent, false);
             board.localPosition = position;
             board.localRotation = Quaternion.Euler(0f, yawDegrees, 0f);
+            string barrierPath = ModelLibrary.Road("construction-barrier");
+            if (ModelLibrary.Exists(barrierPath))
+            {
+                // Kenney barriers are 0.22 wide along Z as modelled, so turn them 90 degrees to run along X.
+                float pieceLength = ModelLibrary.Measure(barrierPath, Vector3.one * ModelLibrary.BarrierScale, 90f).size.x;
+                int pieces = Mathf.Max(1, Mathf.RoundToInt(length / pieceLength));
+                float spacing = length / pieces;
+                for (int i = 0; i < pieces; i++)
+                {
+                    GameObject piece = ModelLibrary.Spawn(board, barrierPath, ModelLibrary.BarrierScale, 90f, $"Barrier{i}");
+                    piece.transform.localPosition = new Vector3(-length * 0.5f + spacing * (i + 0.5f), 0f, 0f);
+                }
+                return;
+            }
+
             Material red = Mat("BarrierRed", new Color(0.85f, 0.08f, 0.08f), 0.4f);
             Material white = Mat("BarrierWhite", new Color(0.95f, 0.95f, 0.95f), 0.4f);
             Material leg = Mat("DarkMetal", new Color(0.15f, 0.15f, 0.16f), 0.5f);
@@ -581,6 +655,102 @@ namespace BusSim.Editor
         {
             BlinkingLights blinker = root.AddComponent<BlinkingLights>();
             SetRefs(blinker, "lights", lights.ToArray());
+        }
+
+        // ---------------- model helpers ----------------
+
+        private const float BikeLength = 1.8f;
+        private const float RiderScale = 0.9f;
+        private const float RiderHeightAboveGround = 0.3f;
+        private const float RiderOffsetZ = -0.1f;
+
+        internal struct CarVisual
+        {
+            public Bounds Bounds;
+            public List<Renderer> Hazards;
+            public List<Renderer> BrakeLights;
+        }
+
+        /// <summary>Size a car model will have (or the fallback size if the model is missing).</summary>
+        private static Bounds CarBounds(string modelName, float fallbackWidth, float fallbackLength)
+        {
+            string path = ModelLibrary.Car(modelName);
+            return ModelLibrary.Exists(path)
+                ? ModelLibrary.Measure(path, ModelLibrary.CarScale, 0f)
+                : new Bounds(Vector3.zero, new Vector3(fallbackWidth, 1.4f, fallbackLength));
+        }
+
+        /// <summary>
+        /// A car model with amber hazard and red brake light boxes on its corners. Bounds are in the parent's
+        /// local space. Falls back to the procedural car if the model is missing.
+        /// </summary>
+        private static CarVisual AddCarVisual(Transform parent, string modelName, float fallbackWidth, float fallbackLength, Color fallbackColour, string fallbackName)
+        {
+            string path = ModelLibrary.Car(modelName);
+            if (!ModelLibrary.Exists(path))
+            {
+                CarParts parts = BuildCar(parent, fallbackWidth, fallbackLength, fallbackColour, fallbackName);
+                return new CarVisual
+                {
+                    Bounds = new Bounds(new Vector3(0f, 0.75f, 0f), new Vector3(fallbackWidth, 1.2f, fallbackLength)),
+                    Hazards = parts.Hazards,
+                    BrakeLights = parts.BrakeLights
+                };
+            }
+
+            GameObject visual = ModelLibrary.Spawn(parent, path, ModelLibrary.CarScale, 0f, "Model");
+            Bounds bounds = ModelLibrary.LocalBounds(visual.transform, parent, null);
+            Material amber = Mat("Indicator", new Color(1f, 0.55f, 0f), 0.9f);
+            Material brake = Mat("BrakeLight", new Color(1f, 0.05f, 0.05f), 0.9f);
+            float y = bounds.min.y + bounds.size.y * CarLightHeightShare;
+            float x = bounds.extents.x - CarLightInset;
+            Vector3 lightSize = new Vector3(CarLightSize, CarLightSize * 0.6f, CarLightSize * 0.4f);
+
+            List<Renderer> hazards = new List<Renderer>();
+            List<Renderer> brakes = new List<Renderer>();
+            foreach (float side in new[] { -1f, 1f })
+            {
+                hazards.Add(AddBox(parent, "HazardFront" + side, amber, new Vector3(bounds.center.x + side * x, y, bounds.max.z + 0.02f), lightSize).GetComponent<Renderer>());
+                hazards.Add(AddBox(parent, "HazardRear" + side, amber, new Vector3(bounds.center.x + side * x, y, bounds.min.z - 0.02f), lightSize).GetComponent<Renderer>());
+                Renderer brakeLight = AddBox(parent, "Brake" + side, brake, new Vector3(bounds.center.x + side * x * 0.6f, y + CarLightSize, bounds.min.z - 0.02f), lightSize).GetComponent<Renderer>();
+                brakeLight.enabled = false;
+                brakes.Add(brakeLight);
+            }
+            return new CarVisual { Bounds = bounds, Hazards = hazards, BrakeLights = brakes };
+        }
+
+        /// <summary>An animated character model (idle / walk / sprint) scaled to a person of the given size factor.</summary>
+        private static GameObject AddPerson(Transform parent, string modelName, float sizeFactor, float yawDegrees, RuntimeAnimatorController controller = null)
+        {
+            GameObject person = ModelLibrary.Spawn(parent, ModelLibrary.Person(modelName), ModelLibrary.CharacterScale * sizeFactor, yawDegrees, "Person");
+            if (person == null)
+            {
+                return null;
+            }
+
+            Animator animator = person.GetComponentInChildren<Animator>();
+            if (animator != null)
+            {
+                animator.runtimeAnimatorController = controller != null ? controller : CharacterAnimation.PersonController();
+                animator.applyRootMotion = false;
+            }
+            return person;
+        }
+
+        /// <summary>Gives a pedestrian root a person model and the matching walk rig, or the procedural person if the model is missing.</summary>
+        private static void AttachPerson(GameObject root, string modelName, float sizeFactor, Color shirt, Color trousers, Color hair, string materialKey)
+        {
+            GameObject person = AddPerson(root.transform, modelName, sizeFactor, 0f);
+            if (person != null)
+            {
+                AnimatorWalkRig rig = root.AddComponent<AnimatorWalkRig>();
+                rig.SetAnimator(person.GetComponentInChildren<Animator>());
+                return;
+            }
+
+            HumanParts parts = BuildHuman(root.transform, Vector3.zero, sizeFactor,
+                Mat($"{materialKey}_Shirt", shirt, 0.2f), Mat($"{materialKey}_Trousers", trousers, 0.2f), Mat($"{materialKey}_Hair", hair, 0.3f));
+            root.AddComponent<WalkRig>().SetRig(parts.Body, parts.LegLeft, parts.LegRight, parts.ArmLeft, parts.ArmRight);
         }
 
         // ---------------- physics helpers ----------------

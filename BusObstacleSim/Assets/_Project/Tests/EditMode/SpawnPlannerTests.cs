@@ -190,6 +190,30 @@ namespace BusSim.Tests
         }
 
         [Test]
+        public void NothingIsPlacedInsideAJunctionZone()
+        {
+            DifficultyProfile profile = HardMix(30f);
+            profile.minGap = 20f;
+            List<RoadZone> zones = new List<RoadZone> { new RoadZone(ZoneType.Junction, 500f, 540f) };
+
+            int placedBefore = 0;
+            int placedAfter = 0;
+            for (int seed = 0; seed < PropertySeeds; seed++)
+            {
+                foreach (SpawnEvent spawnEvent in new SpawnPlanner().Plan(seed, profile, zones, Settings).Events)
+                {
+                    Footprint footprint = spawnEvent.Footprint;
+                    bool overlaps = footprint.SMax > 500f && footprint.SMin < 540f;
+                    Assert.IsFalse(overlaps, $"seed {seed}: {spawnEvent.Definition.id} at {footprint} overlaps the junction");
+                    placedBefore += footprint.SMax <= 500f ? 1 : 0;
+                    placedAfter += footprint.SMin >= 540f ? 1 : 0;
+                }
+            }
+            Assert.Greater(placedBefore, 0, "nothing placed before the junction");
+            Assert.Greater(placedAfter, 0, "nothing placed after the junction");
+        }
+
+        [Test]
         public void EventSeedsDependOnRunSeedAndIndex()
         {
             Assert.AreEqual(SpawnPlanner.DeriveEventSeed(5, 3), SpawnPlanner.DeriveEventSeed(5, 3));

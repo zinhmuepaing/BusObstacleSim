@@ -12,18 +12,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b83854a7d529c0940a16c69899791947, type: 3}
   m_Name: VehicleSettings
   m_EditorClassIdentifier: BusSim.Runtime::BusSim.Vehicle.VehicleSettings
-  chassisWidth: 1.8
-  chassisLength: 4.2
-  chassisHeight: 1.4
+  chassisWidth: 1.8000001
+  chassisLength: 3.9524999
+  chassisHeight: 2.0149999
   sideClearanceMargin: 0.35
-  groundClearance: 0.3
+  groundClearance: 0.3255
   mass: 1300
   centreOfMass: {x: 0, y: 0.55, z: 0}
   angularDamping: 0.5
   dragCoefficient: 0.42
-  wheelbase: 2.6
-  trackWidth: 1.56
-  wheelRadius: 0.32
+  wheelbase: 2.0459998
+  trackWidth: 1.0200002
+  wheelRadius: 0.465
   wheelMass: 20
   suspensionDistance: 0.2
   suspensionTarget: 0.5
@@ -35,7 +35,7 @@ MonoBehaviour:
   antiRoll: 8000
   maxSpeedKmh: 50
   maxReverseKmh: 10
-  motorTorque: 900
+  motorTorque: 1307.8125
   reverseTorqueShare: 0.6
   speedTaper: 1.5
   brakeTorque: 3000

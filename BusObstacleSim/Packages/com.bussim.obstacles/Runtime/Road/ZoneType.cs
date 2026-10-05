@@ -5,6 +5,7 @@ namespace BusSim.Road
     {
         None = 0,
         BusStop = 1,
-        School = 2
+        School = 2,
+        Junction = 3
     }
 }

@@ -7,7 +7,6 @@ namespace BusSim.Obstacles
     /// time to arrival drops below the definition's trigger. Optionally pauses once mid-road
     /// (elderly crosser). Used for adult jaywalkers, elderly crossers and running children.
     /// </summary>
-    [RequireComponent(typeof(WalkRig))]
     public class PedestrianCrossing : ObstacleBehaviour
     {
         [SerializeField, Min(0.1f)] private float walkSpeed = 1.4f;
@@ -16,7 +15,7 @@ namespace BusSim.Obstacles
         [SerializeField, Range(0f, 1f)] private float pauseChance;
         [SerializeField, Min(0f)] private float pauseSeconds = 1f;
 
-        private WalkRig rig;
+        private IWalkRig rig;
         private float currentT;
         private float targetT;
         private float direction;
@@ -41,7 +40,7 @@ namespace BusSim.Obstacles
         protected override void Awake()
         {
             base.Awake();
-            rig = GetComponent<WalkRig>();
+            rig = GetComponent<IWalkRig>();
         }
 
         protected override void OnInit()
@@ -104,6 +103,11 @@ namespace BusSim.Obstacles
             {
                 rig.Advance(step);
             }
+        }
+
+        protected override void OnHitReaction()
+        {
+            rig?.Fall();
         }
 
         protected override bool IsOnCarriageway()

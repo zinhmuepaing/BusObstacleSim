@@ -76,6 +76,19 @@ namespace BusSim.Spawning
         /// <summary>How many obstacle instances the pool has ever created. Stays flat when pooling works.</summary>
         public int PooledInstanceCount => pool != null ? pool.CreatedCount : 0;
 
+        /// <summary>Footprints of the static obstacles currently in the world, so ambient traffic can queue behind them.</summary>
+        public void CollectStaticFootprints(List<Footprint> into)
+        {
+            into.Clear();
+            foreach (ActiveObstacle entry in active)
+            {
+                if (!entry.Event.Definition.isDynamic && !entry.Behaviour.WasHit)
+                {
+                    into.Add(entry.Event.Footprint);
+                }
+            }
+        }
+
         /// <summary>Every vehicle-obstacle collision this run, in order.</summary>
         public IReadOnlyList<CollisionRecord> Collisions => collisions;
 

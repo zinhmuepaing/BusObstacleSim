@@ -147,7 +147,9 @@ namespace BusSim.Spawning
             foreach (ObstacleDefinition definition in candidates)
             {
                 float halfLength = definition.footprintLength * 0.5f;
-                bool fits = s + halfLength <= sEnd && ZoneAllows(definition, zones, s - halfLength, s + halfLength);
+                bool fits = s + halfLength <= sEnd
+                    && !InNoSpawnZone(zones, s - halfLength, s + halfLength)
+                    && ZoneAllows(definition, zones, s - halfLength, s + halfLength);
                 float weight = fits ? profile.GetWeight(definition) : 0f;
                 candidateWeights.Add(weight);
                 total += weight;
@@ -174,6 +176,23 @@ namespace BusSim.Spawning
                 }
             }
             return null;
+        }
+
+        /// <summary>Junctions stay clear: no obstacle of any kind may overlap a Junction zone.</summary>
+        private static bool InNoSpawnZone(IReadOnlyList<RoadZone> zones, float sMin, float sMax)
+        {
+            if (zones == null)
+            {
+                return false;
+            }
+            for (int i = 0; i < zones.Count; i++)
+            {
+                if (zones[i].type == ZoneType.Junction && sMax > zones[i].sStart && sMin < zones[i].sEnd)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private static bool ZoneAllows(ObstacleDefinition definition, IReadOnlyList<RoadZone> zones, float sMin, float sMax)

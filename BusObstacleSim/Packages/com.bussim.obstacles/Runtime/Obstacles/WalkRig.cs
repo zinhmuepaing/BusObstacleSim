@@ -3,7 +3,7 @@ using UnityEngine;
 namespace BusSim.Obstacles
 {
     /// <summary>Swings the limbs of a simple humanoid rig. Advance by the distance walked.</summary>
-    public class WalkRig : MonoBehaviour
+    public class WalkRig : MonoBehaviour, IWalkRig
     {
         [SerializeField] private Transform body;
         [SerializeField] private Transform legLeft;
@@ -44,6 +44,11 @@ namespace BusSim.Obstacles
         public void Stand()
         {
             phase = 0f;
+            Pose(0f);
+        }
+
+        public void Fall()
+        {
             Pose(0f);
         }
 

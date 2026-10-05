@@ -93,6 +93,32 @@ namespace BusSim.Tests
         }
 
         [Test]
+        public void OncomingCarriageway_SitsRightOfTheMedian()
+        {
+            BuildRoad(new float3(0, 0, 0), new float3(0, 0, 1000));
+
+            // Driven carriageway keeps t in -3.5..3.5, then a 3 m median, then two oncoming lanes, then the footpath.
+            Assert.IsTrue(settings.HasOncoming);
+            Assert.AreEqual(6.5f, settings.OncomingInnerT, PositionTolerance);
+            Assert.AreEqual(8.25f, settings.GetOncomingLaneCentreT(0), PositionTolerance);
+            Assert.AreEqual(11.75f, settings.GetOncomingLaneCentreT(1), PositionTolerance);
+            Assert.AreEqual(13.5f, settings.OncomingOuterT, PositionTolerance);
+            Assert.AreEqual(15.5f, settings.RightFootpathOuterT, PositionTolerance);
+            Assert.AreEqual(-5.5f, settings.LeftFootpathOuterT, PositionTolerance);
+            // The driven carriageway width, which the clearance rule uses, is unchanged.
+            Assert.AreEqual(7f, settings.RoadWidth, PositionTolerance);
+        }
+
+        [Test]
+        public void SingleCarriageway_HasNoOncomingOrMedian()
+        {
+            BuildRoad(new float3(0, 0, 0), new float3(0, 0, 1000));
+            settings.oncomingLaneCount = 0;
+            Assert.IsFalse(settings.HasOncoming);
+            Assert.AreEqual(settings.HalfRoadWidth, settings.RightFootpathInnerT, PositionTolerance);
+        }
+
+        [Test]
         public void CurvedRoad_GetPointThenProjectRoundTrips()
         {
             BuildRoad(

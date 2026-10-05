@@ -9,6 +9,7 @@ The obstacles are the deliverable. The bus is only a test rig. This is a student
 2. docs/ARCHITECTURE.md (scripts, data, algorithms)
 3. docs/OBSTACLE_CATALOG.md (obstacle types and behaviours)
 4. docs/WORKFLOW.md (how to work in Unity through MCP, roadmap, acceptance tests)
+5. docs/KNOWN_ISSUES.md (open bugs, accepted deviations, MCP and Unity workarounds)
 
 Paths are relative to the folder that contains this file. If a doc and the user's message disagree, the user's message wins. Then tell the user which doc needs updating.
 

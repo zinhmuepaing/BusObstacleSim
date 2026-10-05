@@ -33,6 +33,8 @@ namespace BusSim.Obstacles
         [SerializeField, Min(0f)] private float settleSeconds = 8f;
         [SerializeField, Min(0f)] private float settleSpeed = 0.1f;
         [SerializeField, Min(0f)] private float lostDistance = 30f;
+        [Tooltip("A scripted mover that falls this far (metres) behind its scripted pose is blocked and stops being driven.")]
+        [SerializeField, Min(0.5f)] private float maxPoseLag = 3f;
 
         private Collider[] colliders;
         private ObstacleCollisionReporter[] reporters;
@@ -289,7 +291,16 @@ namespace BusSim.Obstacles
 
             // Steer the dynamic body to the scripted pose. Gravity is off while scripted.
             rootBody.useGravity = false;
-            rootBody.linearVelocity = (position - rootBody.position) / Time.fixedDeltaTime;
+            Vector3 lag = position - rootBody.position;
+            if (lag.sqrMagnitude > maxPoseLag * maxPoseLag)
+            {
+                // Something solid is in the way. Stop driving the body, or the demanded velocity grows every step
+                // and the first thing that touches it is hit at hundreds of metres per second.
+                rootBody.linearVelocity = Vector3.zero;
+                rootBody.angularVelocity = Vector3.zero;
+                return;
+            }
+            rootBody.linearVelocity = lag / Time.fixedDeltaTime;
             rootBody.angularVelocity = Vector3.zero;
             rootBody.MoveRotation(rotation);
         }

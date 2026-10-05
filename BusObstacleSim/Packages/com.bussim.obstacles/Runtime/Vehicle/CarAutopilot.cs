@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using BusSim.Obstacles;
 using BusSim.Road;
 using BusSim.Spawning;
+using BusSim.Traffic;
 using UnityEngine;
 
 namespace BusSim.Vehicle
@@ -44,7 +45,20 @@ namespace BusSim.Vehicle
         [Tooltip("How fast the aim point may shift sideways, in metres per second.")]
         [SerializeField, Min(0.1f)] private float lateralShiftRate = 2f;
 
+        [Header("Following traffic")]
+        [SerializeField] private string trafficLayerName = "Traffic";
+        [Tooltip("Closer than this to the car ahead means emergency braking.")]
+        [SerializeField, Min(0.5f)] private float followMinGap = 4f;
+        [Tooltip("Time gap kept to a slower car ahead.")]
+        [SerializeField, Min(0.1f)] private float followTimeHeadway = 1.8f;
+        [Tooltip("Extra distance beyond the stopping distance at which a slower car ahead is noticed.")]
+        [SerializeField, Min(0f)] private float followExtraReach = 15f;
+
         private readonly RaycastHit[] probeHits = new RaycastHit[32];
+        private const int TrafficProbeCapacity = 32;
+
+        private readonly RaycastHit[] trafficHits = new RaycastHit[TrafficProbeCapacity];
+        private int trafficMask;
         private readonly List<Footprint> statics = new List<Footprint>();
         private readonly List<Footprint> gapScratch = new List<Footprint>();
         private CarController car;
@@ -82,6 +96,7 @@ namespace BusSim.Vehicle
         {
             car = GetComponent<CarController>();
             obstacleMask = LayerMask.GetMask(obstacleLayerName);
+            trafficMask = LayerMask.GetMask(trafficLayerName);
         }
 
         private void OnEnable()
@@ -148,11 +163,51 @@ namespace BusSim.Vehicle
             float steerDegrees = Mathf.Atan(2f * car.Wheelbase * Mathf.Sin(alpha) / lookAhead) * Mathf.Rad2Deg;
             float steer = Mathf.Clamp(steerDegrees / car.MaxSteerAngleNow, -1f, 1f);
 
-            float targetSpeed = finished || BrakingForObstacle ? 0f : targetSpeedKmh * MetresPerSecondPerKmh;
-            float throttle = BrakingForObstacle
+            float followCap = FollowSpeedCap(speed, out bool tooClose);
+            float cruise = Mathf.Min(targetSpeedKmh * MetresPerSecondPerKmh, followCap);
+            float targetSpeed = finished || BrakingForObstacle ? 0f : cruise;
+            bool brakeHard = BrakingForObstacle || (brakeForObstacles && tooClose);
+            float throttle = brakeHard
                 ? -1f
                 : Mathf.Clamp((targetSpeed - car.SpeedMetresPerSecond) * speedGain, -1f, 1f);
             car.SetDrive(throttle, steer);
+        }
+
+        /// <summary>
+        /// Speed cap that keeps a safe time gap to a slower car ahead in the same lane. Infinity if the lane is clear.
+        /// </summary>
+        private float FollowSpeedCap(float speed, out bool tooClose)
+        {
+            tooClose = false;
+            if (trafficMask == 0)
+            {
+                return float.PositiveInfinity;
+            }
+
+            float reach = speed * reactionTimeSeconds + speed * speed / (2f * assumedDeceleration) + stopMarginMetres + followExtraReach;
+            float halfWidth = car.Width * 0.5f + pathMargin;
+            Vector3 origin = transform.position + transform.forward * car.FrontOffset + Vector3.up * probeHeight;
+            Vector3 halfExtents = new Vector3(halfWidth, probeHeight * 0.9f, 0.1f);
+            int count = Physics.BoxCastNonAlloc(origin, halfExtents, transform.forward, trafficHits, transform.rotation,
+                reach, trafficMask, QueryTriggerInteraction.Ignore);
+
+            float cap = float.PositiveInfinity;
+            for (int i = 0; i < count; i++)
+            {
+                TrafficVehicle other = trafficHits[i].collider.GetComponentInParent<TrafficVehicle>();
+                if (other == null || other.Direction < 0)
+                {
+                    continue;
+                }
+
+                float gap = trafficHits[i].distance;
+                Rigidbody otherBody = trafficHits[i].collider.attachedRigidbody;
+                float leadSpeed = otherBody != null ? Mathf.Max(0f, Vector3.Dot(otherBody.linearVelocity, transform.forward)) : 0f;
+                float allowed = leadSpeed + Mathf.Max(0f, gap - followMinGap) / followTimeHeadway;
+                cap = Mathf.Min(cap, allowed);
+                tooClose |= gap < followMinGap;
+            }
+            return cap;
         }
 
         /// <summary>

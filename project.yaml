@@ -1,0 +1,16 @@
+# Project configuration read by the CCGS skills and hooks (see .claude/docs/config-resolution.md).
+# Only the keys this project needs. Source of truth for tooling, not a replacement for CLAUDE.md.
+
+schema_version: 1
+
+framework:
+  version: 1.1.2
+
+engine:
+  name: unity
+  version: 6000.6.4f1
+  language: csharp
+  rendering: urp
+
+testing:
+  framework: nunit

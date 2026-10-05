@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Text;
 using BusSim.Obstacles;
 using BusSim.Spawning;
+using BusSim.Traffic;
 using BusSim.Vehicle;
 using UnityEngine;
 
@@ -75,6 +76,7 @@ namespace BusSim.Editor
             CarAutopilot autopilot = bus.GetComponent<CarAutopilot>();
             Rigidbody body = bus.GetComponent<Rigidbody>();
             ObstacleSpawner spawner = Object.FindAnyObjectByType<ObstacleSpawner>();
+            TrafficManager traffic = Object.FindAnyObjectByType<TrafficManager>();
             carHalfWidth = bus.Width * 0.5f;
             carLength = bus.Length;
 
@@ -105,6 +107,7 @@ namespace BusSim.Editor
             int brakingSteps = 0;
             float topSpeed = 0f;
             float minUp = 1f;
+            int maxTrafficActive = 0;
             try
             {
                 // Let the car settle onto its suspension at rest, so every run starts from the same state.
@@ -121,6 +124,11 @@ namespace BusSim.Editor
                 for (steps = 1; steps <= maxSteps; steps++)
                 {
                     spawner.Step(dt);
+                    traffic?.Step(dt);
+                    if (traffic != null)
+                    {
+                        maxTrafficActive = Mathf.Max(maxTrafficActive, traffic.ActiveCount);
+                    }
                     autopilot.Tick(dt);
                     bus.Tick(dt);
                     Physics.Simulate(dt);
@@ -159,7 +167,15 @@ namespace BusSim.Editor
             }
 
             string drive = $"Car: top speed {topSpeed:F1} km/h, min upright {minUp:F2} (flip below {UprightThreshold}), collisions logged {spawner.Collisions.Count}, final position {body.position.x:F4}, {body.position.z:F4}";
-            return drive + "\n" + Report(spawner, autopilot, stats, steps * dt, brakingSteps * dt, listEvents);
+            StringBuilder hits = new StringBuilder();
+            foreach (CollisionRecord record in spawner.Collisions)
+            {
+                hits.AppendLine($"  collision: {record.ObstacleId} (event {record.EventIndex}) at {record.Time:F1} s, relative speed {record.RelativeSpeed:F1} m/s, car {record.VehicleSpeed:F1} m/s");
+            }
+            string trafficLine = traffic != null
+                ? $"Traffic: planned {traffic.Plan.Count}, most active at once {maxTrafficActive}, still active {traffic.ActiveCount}\n"
+                : "Traffic: none in scene\n";
+            return drive + "\n" + trafficLine + hits + Report(spawner, autopilot, stats, steps * dt, brakingSteps * dt, listEvents);
         }
 
         private static float carHalfWidth;

@@ -6,7 +6,6 @@ namespace BusSim.Obstacles
     /// Passenger at a bus stop who, as the bus approaches, runs along the footpath toward it and
     /// steps off the kerb to flag it, waits, then steps back. Blocks only the kerbside edge.
     /// </summary>
-    [RequireComponent(typeof(WalkRig))]
     public class PassengerRush : ObstacleBehaviour
     {
         private enum Phase
@@ -26,7 +25,7 @@ namespace BusSim.Obstacles
         [SerializeField, Min(0.1f)] private float stepBackSpeed = 1f;
         [SerializeField, Min(0.05f)] private float bodyRadius = 0.3f;
 
-        private WalkRig rig;
+        private IWalkRig rig;
         private Phase phase;
         private float currentS;
         private float currentT;
@@ -38,7 +37,7 @@ namespace BusSim.Obstacles
         protected override void Awake()
         {
             base.Awake();
-            rig = GetComponent<WalkRig>();
+            rig = GetComponent<IWalkRig>();
         }
 
         protected override void OnInit()
@@ -102,6 +101,11 @@ namespace BusSim.Obstacles
                     }
                     break;
             }
+        }
+
+        protected override void OnHitReaction()
+        {
+            rig?.Fall();
         }
 
         protected override bool IsOnCarriageway()

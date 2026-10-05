@@ -24,7 +24,8 @@ namespace BusSim.Spawning
             {
                 if (instance != null)
                 {
-                    Object.Destroy(instance);
+                    // Immediate, so the old instances are gone before the next run builds its own.
+                    Object.DestroyImmediate(instance);
                 }
             }
             all.Clear();

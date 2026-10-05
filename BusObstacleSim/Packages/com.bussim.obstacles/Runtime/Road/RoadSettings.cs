@@ -16,6 +16,15 @@ namespace BusSim.Road
         [Tooltip("Road surface height above the road object's origin. The road is flat.")]
         public float surfaceY = 0f;
 
+        [Header("Oncoming carriageway (right of the driven carriageway)")]
+        [Tooltip("Lanes of opposing traffic beside the driven carriageway. Zero means a single carriageway with footpaths both sides.")]
+        [Min(0)] public int oncomingLaneCount = 2;
+        [Tooltip("Width of the raised median between the two carriageways.")]
+        [Min(0.5f)] public float medianWidth = 3f;
+        [Tooltip("Paved kerb cap on each side of the grassed median.")]
+        [Min(0.05f)] public float medianCapWidth = 0.3f;
+        [Min(0f)] public float medianGrassSink = 0.03f;
+
         [Header("Footpath and kerb")]
         [Min(0f)] public float footpathWidth = 2f;
         [Min(0f)] public float kerbHeight = 0.15f;
@@ -45,6 +54,26 @@ namespace BusSim.Road
 
         public float RoadWidth => laneCount * laneWidth;
         public float HalfRoadWidth => RoadWidth * 0.5f;
+
+        public bool HasOncoming => oncomingLaneCount > 0;
+        public float OncomingWidth => oncomingLaneCount * laneWidth;
+
+        /// <summary>t of the median-side edge of the oncoming carriageway.</summary>
+        public float OncomingInnerT => HalfRoadWidth + medianWidth;
+
+        public float OncomingOuterT => OncomingInnerT + OncomingWidth;
+
+        /// <summary>t where the right footpath begins: the oncoming kerb, or the driven kerb if there is none.</summary>
+        public float RightFootpathInnerT => HasOncoming ? OncomingOuterT : HalfRoadWidth;
+
+        public float RightFootpathOuterT => RightFootpathInnerT + footpathWidth;
+        public float LeftFootpathOuterT => -(HalfRoadWidth + footpathWidth);
+
+        /// <summary>Lane centre t of the oncoming carriageway. Lane 0 is the one next to the median.</summary>
+        public float GetOncomingLaneCentreT(int laneIndexFromMedian)
+        {
+            return OncomingInnerT + laneWidth * (laneIndexFromMedian + 0.5f);
+        }
 
         /// <summary>Lateral offset t of a lane centre. Lane 0 is the leftmost lane.</summary>
         public float GetLaneCentreT(int laneIndexFromLeft)

@@ -4,7 +4,23 @@ Every asset in the project, where it came from, and its licence. CLAUDE.md rule 
 
 ## Third-party assets imported
 
-None. No Asset Store packs, Sketchfab models or texture libraries have been imported.
+Seven free packs, all CC0 1.0 (public domain, no attribution needed). Downloaded 2026-10-05 from OpenGameArt.org,
+the official host for these authors. Only the FBX models and their texture were copied into the project (the
+archives also hold GLB, OBJ and previews). Each folder keeps the pack's `License.txt`.
+
+| Pack | Author | Source page | Archive | Size | Folder under `Assets/_Project/ThirdParty/` | Used for |
+|---|---|---|---|---|---|---|
+| Car Kit 3.1 | Kenney | https://opengameart.org/content/car-kit | `kenney_car-kit_3.1.zip` | 4.8 MB | `KenneyCars` | player car, parked and moving cars, vans, crate |
+| City Kit Roads | Kenney | https://opengameart.org/content/city-kit-roads | `kenney_city-kit-roads_0.zip` | 2.8 MB | `KenneyRoads` | cones, barriers, signs, street lights |
+| Mini Characters | Kenney | https://opengameart.org/content/mini-character-1 | `kenney_mini-characters.zip` | 2.4 MB | `KenneyChars` | pedestrians, children, riders (32 animation clips) |
+| City Kit Suburban 2.0 | Kenney | https://opengameart.org/content/city-kit-suburban | `kenney_city-kit-suburban_2.0.zip` | 3.0 MB | `KenneySuburban` | houses, fences (scene dressing) |
+| City Kit Commercial 2.1 | Kenney | https://opengameart.org/content/city-kit-commercial | `kenney_city-kit-commercial_2.1.zip` | 4.1 MB | `KenneyCommercial` | shops and buildings (scene dressing) |
+| Nature Kit 2.1 | Kenney | https://opengameart.org/content/nature-kit | `Nature Kit (2.1).zip` | 10.5 MB | `KenneyNature` | trees, fallen log |
+| LowPoly Public Transport | Quaternius | https://opengameart.org/content/lowpoly-public-transport | `Public Transport_0.zip` | 1.4 MB | `QuatTransport` | bicycle, bus |
+
+Models are stylised low-poly, not photorealistic. Each pack is modelled at its own toy scale, so
+`Editor/ModelLibrary.cs` holds one scale factor per category. A prefab falls back to the procedural
+placeholder if its model file is missing.
 
 ## Generated in-project (owned by the project)
 

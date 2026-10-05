@@ -39,11 +39,19 @@ namespace BusSim.Editor
             {
                 zones = Undo.AddComponent<RoadZones>(road.gameObject);
             }
-            zones.SetZones(new List<RoadZone>
+            List<RoadZone> zoneList = new List<RoadZone>
             {
                 new RoadZone(ZoneType.BusStop, BusStopStart, BusStopEnd),
                 new RoadZone(ZoneType.School, SchoolStart, SchoolEnd)
-            });
+            };
+            foreach (RoadZone existing in zones.Zones)
+            {
+                if (existing.type == ZoneType.Junction)
+                {
+                    zoneList.Add(existing);
+                }
+            }
+            zones.SetZones(zoneList);
 
             Transform old = road.transform.Find(ZonesObjectName);
             if (old != null)
@@ -118,7 +126,7 @@ namespace BusSim.Editor
             return frame;
         }
 
-        private static void Ribbon(RoadSampler road, Transform parent, string objectName, Material material,
+        internal static void Ribbon(RoadSampler road, Transform parent, string objectName, Material material,
             float sStart, float sEnd, float tCentre, float width, float lift)
         {
             List<Vector3> vertices = new List<Vector3>();
