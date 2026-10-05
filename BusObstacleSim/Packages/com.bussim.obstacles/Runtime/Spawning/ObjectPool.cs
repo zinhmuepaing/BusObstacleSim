@@ -8,6 +8,7 @@ namespace BusSim.Spawning
     {
         private readonly Dictionary<GameObject, Stack<GameObject>> free = new Dictionary<GameObject, Stack<GameObject>>();
         private readonly Transform root;
+        private readonly List<GameObject> all = new List<GameObject>();
 
         public ObjectPool(Transform root)
         {
@@ -15,6 +16,21 @@ namespace BusSim.Spawning
         }
 
         public int CreatedCount { get; private set; }
+
+        /// <summary>Destroys every instance this pool ever made. Call before replacing the pool.</summary>
+        public void Clear()
+        {
+            foreach (GameObject instance in all)
+            {
+                if (instance != null)
+                {
+                    Object.Destroy(instance);
+                }
+            }
+            all.Clear();
+            free.Clear();
+            CreatedCount = 0;
+        }
 
         public void Prewarm(GameObject prefab, int count)
         {
@@ -54,7 +70,9 @@ namespace BusSim.Spawning
         private GameObject Create(GameObject prefab)
         {
             CreatedCount++;
-            return Object.Instantiate(prefab, root);
+            GameObject instance = Object.Instantiate(prefab, root);
+            all.Add(instance);
+            return instance;
         }
     }
 }

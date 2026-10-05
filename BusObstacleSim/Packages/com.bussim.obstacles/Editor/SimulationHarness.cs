@@ -1,9 +1,8 @@
 using System.Collections.Generic;
-using System.Reflection;
 using System.Text;
 using BusSim.Obstacles;
 using BusSim.Spawning;
-using BusSim.TestRig;
+using BusSim.Vehicle;
 using UnityEngine;
 
 namespace BusSim.Editor
@@ -15,10 +14,12 @@ namespace BusSim.Editor
     /// </summary>
     public static class SimulationHarness
     {
-        private const float BusHalfWidth = 1.25f;
-        private const float BusLength = 12f;
         private const float StoppedKmh = 0.5f;
-        private const BindingFlags Any = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
+        private const int SettleSteps = 100;
+        private const float StartDistance = 10f;
+        private const float StartClearance = 0.1f;
+        private const float UprightThreshold = 0.7f;
+        private const float KmhPerMetrePerSecond = 3.6f;
 
         private sealed class EventStats
         {
@@ -38,7 +39,7 @@ namespace BusSim.Editor
         public static void RunDeferred(DifficultyProfile profile, int seed, bool brakeForObstacles, float maxSeconds, bool listEvents, string label)
         {
             UnityEditor.EditorApplication.delayCall += () =>
-                Debug.Log($"[Harness {label}]\n{Run(profile, seed, brakeForObstacles, maxSeconds, listEvents)}");
+                HarnessLog.Write($"Harness {label}", Run(profile, seed, brakeForObstacles, maxSeconds, listEvents));
         }
 
         /// <summary>Profile built in memory from definition ids, for single-type acceptance runs.</summary>
@@ -70,14 +71,14 @@ namespace BusSim.Editor
                 return "Enter Play mode first.";
             }
 
-            TestBusController bus = Object.FindAnyObjectByType<TestBusController>();
-            TestBusAutopilot autopilot = bus.GetComponent<TestBusAutopilot>();
+            CarController bus = Object.FindAnyObjectByType<CarController>();
+            CarAutopilot autopilot = bus.GetComponent<CarAutopilot>();
             Rigidbody body = bus.GetComponent<Rigidbody>();
             ObstacleSpawner spawner = Object.FindAnyObjectByType<ObstacleSpawner>();
-            MethodInfo busStep = typeof(TestBusController).GetMethod("FixedUpdate", Any);
-            MethodInfo autopilotStep = typeof(TestBusAutopilot).GetMethod("FixedUpdate", Any);
+            carHalfWidth = bus.Width * 0.5f;
+            carLength = bus.Length;
 
-            ResetBus(spawner, body);
+            ResetBus(spawner, bus);
             spawner.ResetRun(seed, profile);
 
             Dictionary<int, EventStats> stats = new Dictionary<int, EventStats>();
@@ -102,17 +103,29 @@ namespace BusSim.Editor
             float dt = Time.fixedDeltaTime;
             int steps = 0;
             int brakingSteps = 0;
+            float topSpeed = 0f;
+            float minUp = 1f;
             try
             {
+                // Let the car settle onto its suspension at rest, so every run starts from the same state.
+                for (int settle = 0; settle < SettleSteps; settle++)
+                {
+                    bus.Tick(dt);
+                    Physics.Simulate(dt);
+                }
+                bus.PlaceAt(body.position, body.rotation);
+
                 autopilot.enabled = true;
                 autopilot.SetBrakeForObstacles(brakeForObstacles);
                 int maxSteps = Mathf.CeilToInt(maxSeconds / dt);
                 for (steps = 1; steps <= maxSteps; steps++)
                 {
-                    autopilotStep.Invoke(autopilot, null);
-                    busStep.Invoke(bus, null);
-                    Physics.Simulate(dt);
                     spawner.Step(dt);
+                    autopilot.Tick(dt);
+                    bus.Tick(dt);
+                    Physics.Simulate(dt);
+                    topSpeed = Mathf.Max(topSpeed, bus.SpeedKmh);
+                    minUp = Mathf.Min(minUp, Vector3.Dot(bus.transform.up, Vector3.up));
                     if (autopilot.BrakingForObstacle)
                     {
                         brakingSteps++;
@@ -124,7 +137,7 @@ namespace BusSim.Editor
                         Capture(entry, behaviour);
                         if (entry.Triggered && entry.SpeedAtTriggerKmh <= 0f)
                         {
-                            entry.SpeedAtTriggerKmh = spawner.VehicleSpeed * 3.6f;
+                            entry.SpeedAtTriggerKmh = spawner.VehicleSpeed * KmhPerMetrePerSecond;
                         }
                         Measure(entry, behaviour, spawner);
                     }
@@ -138,29 +151,25 @@ namespace BusSim.Editor
             finally
             {
                 autopilot.enabled = false;
-                bus.ClearInputOverride();
+                bus.ClearDrive();
                 body.interpolation = previousInterpolation;
                 Physics.simulationMode = previousMode;
                 spawner.ObstacleActivated -= onActivated;
                 spawner.ObstacleReleased -= onReleased;
             }
 
-            return Report(spawner, autopilot, stats, steps * dt, brakingSteps * dt, listEvents);
+            string drive = $"Car: top speed {topSpeed:F1} km/h, min upright {minUp:F2} (flip below {UprightThreshold}), collisions logged {spawner.Collisions.Count}, final position {body.position.x:F4}, {body.position.z:F4}";
+            return drive + "\n" + Report(spawner, autopilot, stats, steps * dt, brakingSteps * dt, listEvents);
         }
 
-        private static void ResetBus(ObstacleSpawner spawner, Rigidbody body)
+        private static float carHalfWidth;
+        private static float carLength;
+
+        private static void ResetBus(ObstacleSpawner spawner, CarController car)
         {
-            const float startS = BusLength * 0.5f + 2f;
             float laneT = spawner.Road.Settings.GetLaneCentreT(0);
-            spawner.Road.GetFrame(startS, out Vector3 centre, out Vector3 forward, out Vector3 right);
-            Vector3 position = centre + right * laneT + Vector3.up * 0.05f;
-            Quaternion rotation = Quaternion.LookRotation(forward, Vector3.up);
-            body.position = position;
-            body.rotation = rotation;
-            body.transform.SetPositionAndRotation(position, rotation);
-            body.linearVelocity = Vector3.zero;
-            body.angularVelocity = Vector3.zero;
-            Physics.SyncTransforms();
+            spawner.Road.GetFrame(StartDistance, out Vector3 centre, out Vector3 forward, out Vector3 right);
+            car.PlaceAt(centre + right * laneT + Vector3.up * StartClearance, Quaternion.LookRotation(forward, Vector3.up));
         }
 
         private static void Capture(EventStats entry, ObstacleBehaviour behaviour)
@@ -178,14 +187,14 @@ namespace BusSim.Editor
             (float s, float t) = spawner.Road.ProjectToRoad(behaviour.transform.position);
             float halfWidth = entry.Event.Definition.footprintWidth * 0.5f;
             float halfLength = entry.Event.Definition.footprintLength * 0.5f;
-            bool lateralOverlap = Mathf.Abs(t - spawner.VehicleT) < BusHalfWidth + halfWidth;
+            bool lateralOverlap = Mathf.Abs(t - spawner.VehicleT) < carHalfWidth + halfWidth;
             if (!lateralOverlap)
             {
                 return;
             }
 
             float gap = (s - halfLength) - spawner.VehicleFrontS;
-            float busRearS = spawner.VehicleFrontS - BusLength;
+            float busRearS = spawner.VehicleFrontS - carLength;
             if (s + halfLength > busRearS)
             {
                 entry.MinGapInPath = Mathf.Min(entry.MinGapInPath, gap);
@@ -196,7 +205,7 @@ namespace BusSim.Editor
             }
         }
 
-        private static string Report(ObstacleSpawner spawner, TestBusAutopilot autopilot, Dictionary<int, EventStats> stats,
+        private static string Report(ObstacleSpawner spawner, CarAutopilot autopilot, Dictionary<int, EventStats> stats,
             float simulatedSeconds, float brakingSeconds, bool listEvents)
         {
             int contacts = 0;

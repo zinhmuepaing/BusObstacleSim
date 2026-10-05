@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 1680694229339728341}
   - component: {fileID: 5659084619997305958}
   - component: {fileID: 2287636183614397342}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: LegLeftMesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -101,7 +101,7 @@ GameObject:
   - component: {fileID: 2383124811451176773}
   - component: {fileID: 976474217789659983}
   - component: {fileID: 1617621085044474362}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: HandLeft
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -189,7 +189,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2396598381616838045}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: LegLeft
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -224,7 +224,7 @@ GameObject:
   - component: {fileID: 5857005615134453135}
   - component: {fileID: 4817068029128392851}
   - component: {fileID: 3229459410040875769}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: ShoeRight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -312,7 +312,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6764620528185918736}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: ArmRight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -347,7 +347,7 @@ GameObject:
   - component: {fileID: 7351666046907407460}
   - component: {fileID: 4913115793723750663}
   - component: {fileID: 5583288895903396380}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: ShoeLeft
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -435,7 +435,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4049391376541004125}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: ArmLeft
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -470,7 +470,7 @@ GameObject:
   - component: {fileID: 2796758709883747490}
   - component: {fileID: 4001355686511243949}
   - component: {fileID: 6638957987849443991}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: LegRightMesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -549,6 +549,59 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &3115774357226926695
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1809718748929965131}
+  - component: {fileID: 7280768055733532212}
+  m_Layer: 8
+  m_Name: Footprint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1809718748929965131
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3115774357226926695}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6789970970758757901}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &7280768055733532212
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3115774357226926695}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.6, y: 1.6625, z: 0.6}
+  m_Center: {x: 0, y: 0.83125, z: 0}
 --- !u!1 &3278140115312263006
 GameObject:
   m_ObjectHideFlags: 0
@@ -558,7 +611,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8671236279014073815}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: Body
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -598,7 +651,7 @@ GameObject:
   - component: {fileID: 8709178566366292657}
   - component: {fileID: 2831475929583342493}
   - component: {fileID: 4400046442678718236}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: HandRight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -688,7 +741,7 @@ GameObject:
   - component: {fileID: 3052615876552010486}
   - component: {fileID: 4216680352363277528}
   - component: {fileID: 5146214942058597176}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: Torso
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -778,7 +831,7 @@ GameObject:
   - component: {fileID: 1468731531213526966}
   - component: {fileID: 7187160676979762265}
   - component: {fileID: 7831465703614727892}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: Hair
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -868,7 +921,7 @@ GameObject:
   - component: {fileID: 676535951064231875}
   - component: {fileID: 5858890944542251885}
   - component: {fileID: 2452712744060101195}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: Head
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -956,7 +1009,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8104196197761567489}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: LegRight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -991,8 +1044,11 @@ GameObject:
   - component: {fileID: 6789970970758757901}
   - component: {fileID: 3151296161986778900}
   - component: {fileID: 3882248054719938286}
-  - component: {fileID: 1259917015243510869}
-  m_Layer: 8
+  - component: {fileID: 971872778597013850}
+  - component: {fileID: 3604402705884821615}
+  - component: {fileID: 1469997936324829130}
+  - component: {fileID: 3956314570941143639}
+  m_Layer: 10
   m_Name: PED_ELDERLY
   m_TagString: Obstacle
   m_Icon: {fileID: 0}
@@ -1012,6 +1068,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1809718748929965131}
   - {fileID: 8671236279014073815}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1048,18 +1105,79 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c8b390c9e8fa8445aa1585ad5eecf62, type: 3}
   m_Name: 
   m_EditorClassIdentifier: BusSim.Runtime::BusSim.Obstacles.PedestrianCrossing
+  knockVelocityShare: 0.9
+  knockLaunchSpeed: 2
+  knockLeverHeight: 0.4
+  hitLinearDamping: 1
+  hitAngularDamping: 4
+  settleSeconds: 8
+  settleSpeed: 0.1
+  lostDistance: 30
   walkSpeed: 0.8
   bodyRadius: 0.3
   pauseChance: 0.6
   pauseSeconds: 1
---- !u!65 &1259917015243510869
-BoxCollider:
+--- !u!114 &971872778597013850
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7285056310391565828}
-  m_Material: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 429be7db9760a654a8a532b611e7f02b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: BusSim.Runtime::BusSim.Obstacles.PooledPhysicsReset
+--- !u!54 &3604402705884821615
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7285056310391565828}
+  serializedVersion: 5
+  m_Mass: 65
+  m_LinearDamping: 0
+  m_AngularDamping: 0.5
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 0
+  m_Interpolate: 1
+  m_Constraints: 112
+  m_CollisionDetection: 3
+--- !u!114 &1469997936324829130
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7285056310391565828}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de98db415621c554cb1b96fcd3a29959, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: BusSim.Runtime::BusSim.Obstacles.ObstacleCollisionReporter
+  minRelativeSpeed: 0.5
+  debounceSeconds: 1
+--- !u!136 &3956314570941143639
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7285056310391565828}
+  m_Material: {fileID: 13400000, guid: badddaac3df7dc94198c8d4a96b56055, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -1067,11 +1185,13 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.6, y: 1.6625, z: 0.6}
+  serializedVersion: 2
+  m_Radius: 0.266
+  m_Height: 1.6625
+  m_Direction: 1
   m_Center: {x: 0, y: 0.83125, z: 0}
 --- !u!1 &8128804789535932060
 GameObject:
@@ -1084,7 +1204,7 @@ GameObject:
   - component: {fileID: 7093364928411414427}
   - component: {fileID: 9110555228768865402}
   - component: {fileID: 1315426271878836509}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: ArmLeftMesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1174,7 +1294,7 @@ GameObject:
   - component: {fileID: 1622287709133975318}
   - component: {fileID: 7550983782308875557}
   - component: {fileID: 5438140530592989030}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: ArmRightMesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}

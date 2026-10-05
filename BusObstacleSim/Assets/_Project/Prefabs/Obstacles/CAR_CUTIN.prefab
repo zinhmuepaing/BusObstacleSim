@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 6615834212093836043}
   - component: {fileID: 2483746920749468223}
   - component: {fileID: 7018277363393393623}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: Brake1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -101,7 +101,7 @@ GameObject:
   - component: {fileID: 3269933403727315094}
   - component: {fileID: 8388517189312352298}
   - component: {fileID: 6441587198426758055}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: Cabin
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -191,7 +191,7 @@ GameObject:
   - component: {fileID: 3967079122176519858}
   - component: {fileID: 3603238308923251295}
   - component: {fileID: 7785958276665156160}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: Head-1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -281,7 +281,7 @@ GameObject:
   - component: {fileID: 8988153546577897780}
   - component: {fileID: 2920109112579618935}
   - component: {fileID: 2747790645783689265}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: Roof
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -371,7 +371,7 @@ GameObject:
   - component: {fileID: 1872665198707526951}
   - component: {fileID: 3365110092415896947}
   - component: {fileID: 4133216915281779483}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: Tail1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -461,7 +461,7 @@ GameObject:
   - component: {fileID: 4054728281116114090}
   - component: {fileID: 3943875076121294477}
   - component: {fileID: 7215228296258408810}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: WheelL1.4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -551,7 +551,7 @@ GameObject:
   - component: {fileID: 8506999135026624900}
   - component: {fileID: 1809486503874145321}
   - component: {fileID: 6967795857102835169}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: WheelL-1.4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -641,7 +641,7 @@ GameObject:
   - component: {fileID: 1626853117850795898}
   - component: {fileID: 7842990016825465643}
   - component: {fileID: 4808592838095354615}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: Tail-1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -731,7 +731,7 @@ GameObject:
   - component: {fileID: 7983342649629529189}
   - component: {fileID: 8019379756924103682}
   - component: {fileID: 4081870565199813418}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: WheelR1.4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -821,7 +821,7 @@ GameObject:
   - component: {fileID: 4290514807358066705}
   - component: {fileID: 2503861938916357331}
   - component: {fileID: 4008131927625568570}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: IndFront1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -911,7 +911,7 @@ GameObject:
   - component: {fileID: 7726824212391250861}
   - component: {fileID: 524777670022624550}
   - component: {fileID: 2109258241062210967}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: WheelR-1.4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1001,7 +1001,7 @@ GameObject:
   - component: {fileID: 2018295375108309766}
   - component: {fileID: 1772911150485166650}
   - component: {fileID: 4689868865784894709}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: Brake-1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1091,7 +1091,7 @@ GameObject:
   - component: {fileID: 1719743260063014242}
   - component: {fileID: 763395534469117908}
   - component: {fileID: 6812156796519265469}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: IndRear1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1181,7 +1181,7 @@ GameObject:
   - component: {fileID: 4428199483061378489}
   - component: {fileID: 7360451993393079686}
   - component: {fileID: 2996177187203109656}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: Head1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1271,7 +1271,7 @@ GameObject:
   - component: {fileID: 5043437628927275769}
   - component: {fileID: 6756143840531363679}
   - component: {fileID: 2925614980868799235}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: IndRear-1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1361,7 +1361,7 @@ GameObject:
   - component: {fileID: 4201813268075859751}
   - component: {fileID: 2023334228926698919}
   - component: {fileID: 2138251651754535529}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: IndFront-1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1450,8 +1450,11 @@ GameObject:
   m_Component:
   - component: {fileID: 4964823873288087616}
   - component: {fileID: 1226466890425262721}
+  - component: {fileID: 9047602100277882879}
+  - component: {fileID: 8716349814138490825}
+  - component: {fileID: 584177361699338012}
   - component: {fileID: 8380589333740652153}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: CAR_CUTIN
   m_TagString: Obstacle
   m_Icon: {fileID: 0}
@@ -1471,6 +1474,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1501321456207435641}
   - {fileID: 8655383431522415083}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1486,6 +1490,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e46b85a793fe0fe49a32b4515602ca0e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: BusSim.Runtime::BusSim.Obstacles.CarCutIn
+  knockVelocityShare: 0.9
+  knockLaunchSpeed: 2
+  knockLeverHeight: 0.4
+  hitLinearDamping: 1
+  hitAngularDamping: 4
+  settleSeconds: 8
+  settleSpeed: 0.1
+  lostDistance: 30
   startBehindFront: 2
   speedAboveVehicle: 3
   mergeGap: 12
@@ -1502,6 +1514,59 @@ MonoBehaviour:
   brakeLights:
   - {fileID: 4689868865784894709}
   - {fileID: 7018277363393393623}
+--- !u!114 &9047602100277882879
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7759175342209002152}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 429be7db9760a654a8a532b611e7f02b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: BusSim.Runtime::BusSim.Obstacles.PooledPhysicsReset
+--- !u!54 &8716349814138490825
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7759175342209002152}
+  serializedVersion: 5
+  m_Mass: 1400
+  m_LinearDamping: 0
+  m_AngularDamping: 0.5
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 0
+  m_Interpolate: 1
+  m_Constraints: 112
+  m_CollisionDetection: 3
+--- !u!114 &584177361699338012
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7759175342209002152}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de98db415621c554cb1b96fcd3a29959, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: BusSim.Runtime::BusSim.Obstacles.ObstacleCollisionReporter
+  minRelativeSpeed: 0.5
+  debounceSeconds: 1
 --- !u!65 &8380589333740652153
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1509,6 +1574,59 @@ BoxCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7759175342209002152}
+  m_Material: {fileID: 13400000, guid: badddaac3df7dc94198c8d4a96b56055, type: 2}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.8, y: 1.2, z: 4.5}
+  m_Center: {x: 0, y: 0.75, z: 0}
+--- !u!1 &7844694002116609012
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1501321456207435641}
+  - component: {fileID: 8730565972590529612}
+  m_Layer: 8
+  m_Name: Footprint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1501321456207435641
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7844694002116609012}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4964823873288087616}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &8730565972590529612
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7844694002116609012}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -1534,7 +1652,7 @@ GameObject:
   - component: {fileID: 4521342040086186036}
   - component: {fileID: 1911722588239118496}
   - component: {fileID: 8334382404337908682}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: Body
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1622,7 +1740,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8655383431522415083}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: Visual
   m_TagString: Untagged
   m_Icon: {fileID: 0}

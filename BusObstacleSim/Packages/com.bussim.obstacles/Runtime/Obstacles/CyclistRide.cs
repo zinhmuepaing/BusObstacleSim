@@ -32,7 +32,7 @@ namespace BusSim.Obstacles
         private float wheelAngle;
         private bool willSwerve;
 
-        public override float CurrentS => currentS;
+        protected override float ScriptedS => currentS;
 
         protected override void OnInit()
         {

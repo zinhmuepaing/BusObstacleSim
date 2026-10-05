@@ -11,7 +11,7 @@ namespace BusSim.Spawning
     /// within spawnAhead, ticks them and releases them once the vehicle is despawnBehind past.
     /// Knows the vehicle only as a Transform, so it works with any vehicle.
     /// </summary>
-    public class ObstacleSpawner : MonoBehaviour, IVehicleState
+    public class ObstacleSpawner : MonoBehaviour, IVehicleState, ICollisionSink
     {
         private struct ActiveObstacle
         {
@@ -19,6 +19,8 @@ namespace BusSim.Spawning
             public GameObject Instance;
             public ObstacleBehaviour Behaviour;
         }
+
+        private const int CollisionCapacity = 64;
 
         [Header("Scene references")]
         [SerializeField] private RoadSampler road;
@@ -36,12 +38,12 @@ namespace BusSim.Spawning
         [SerializeField, Min(1f)] private float spawnAhead = 150f;
         [SerializeField, Min(0f)] private float despawnBehind = 50f;
         [Tooltip("Distance from the vehicle pivot to its front bumper.")]
-        [SerializeField, Min(0f)] private float vehicleFrontOffset = 6f;
+        [SerializeField, Min(0f)] private float vehicleFrontOffset = 2.1f;
         [Tooltip("Higher values follow speed changes faster.")]
         [SerializeField, Min(0.1f)] private float speedSmoothingRate = 5f;
 
         [Header("Clearance (FR3)")]
-        [SerializeField, Min(0.1f)] private float minClearCorridor = 3.2f;
+        [SerializeField, Min(0.1f)] private float minClearCorridor = 2.5f;
         [SerializeField, Min(0f)] private float clearanceWindowMargin = 15f;
         [SerializeField, Min(1)] private int maxPlacementAttempts = 8;
 
@@ -49,6 +51,7 @@ namespace BusSim.Spawning
         [SerializeField, Min(0)] private int prewarmPerPrefab = 3;
 
         private readonly List<ActiveObstacle> active = new List<ActiveObstacle>();
+        private readonly List<CollisionRecord> collisions = new List<CollisionRecord>(CollisionCapacity);
         private readonly SpawnPlanner planner = new SpawnPlanner();
         private ObjectPool pool;
         private int nextEventIndex;
@@ -58,6 +61,7 @@ namespace BusSim.Spawning
         public event Action<SpawnPlan> PlanBuilt;
         public event Action<SpawnEvent, ObstacleBehaviour> ObstacleActivated;
         public event Action<SpawnEvent, ObstacleBehaviour> ObstacleReleased;
+        public event Action<CollisionRecord> ObstacleHit;
 
         public SpawnPlan Plan { get; private set; }
         public RoadSampler Road => road;
@@ -68,6 +72,18 @@ namespace BusSim.Spawning
         public float MinClearCorridor => minClearCorridor;
         public float ClearanceWindowMargin => clearanceWindowMargin;
         public int ActiveCount => active.Count;
+
+        /// <summary>How many obstacle instances the pool has ever created. Stays flat when pooling works.</summary>
+        public int PooledInstanceCount => pool != null ? pool.CreatedCount : 0;
+
+        /// <summary>Every vehicle-obstacle collision this run, in order.</summary>
+        public IReadOnlyList<CollisionRecord> Collisions => collisions;
+
+        public void OnCollision(in CollisionRecord record)
+        {
+            collisions.Add(record);
+            ObstacleHit?.Invoke(record);
+        }
 
         public Transform VehicleTransform => vehicle;
         public float VehicleS { get; private set; }
@@ -81,6 +97,13 @@ namespace BusSim.Spawning
             vehicle = vehicleTransform;
             profile = difficulty;
             zones = roadZones;
+        }
+
+        /// <summary>Sets the vehicle's front offset and the narrowest corridor the planner may leave.</summary>
+        public void SetVehicleGeometry(float frontOffset, float requiredCorridor)
+        {
+            vehicleFrontOffset = frontOffset;
+            minClearCorridor = requiredCorridor;
         }
 
         public void SetSeed(int newSeed, bool randomEachRun)
@@ -143,6 +166,8 @@ namespace BusSim.Spawning
                 return;
             }
 
+            PhysicsSetup.Apply();
+            collisions.Clear();
             if (randomSeedEachRun)
             {
                 seed = Environment.TickCount & int.MaxValue;
@@ -151,6 +176,7 @@ namespace BusSim.Spawning
             BuildPlan(seed);
             Debug.Log($"BusSim run: profile {profile.profileName}, {Plan.Summary()}", this);
 
+            pool?.Clear();
             pool = new ObjectPool(transform);
             PrewarmPool();
             nextEventIndex = 0;
@@ -165,9 +191,9 @@ namespace BusSim.Spawning
             }
         }
 
-        private void Update()
+        private void FixedUpdate()
         {
-            Step(Time.deltaTime);
+            Step(Time.fixedDeltaTime);
         }
 
         /// <summary>One spawner update. Public so tests and tools can drive it without a render loop.</summary>
@@ -188,7 +214,7 @@ namespace BusSim.Spawning
 
                 float passedS = entry.Behaviour.CurrentS + entry.Event.Definition.footprintLength * 0.5f;
                 bool passed = VehicleS - despawnBehind > passedS;
-                if (passed || entry.Behaviour.IsFinished)
+                if (passed || entry.Behaviour.IsFinished || entry.Behaviour.IsSettledOrLost)
                 {
                     Release(i);
                 }
@@ -224,20 +250,32 @@ namespace BusSim.Spawning
                     continue; // already behind the vehicle, for example after a teleport
                 }
 
-                GameObject instance = pool.Get(spawnEvent.Definition.prefab);
-                ObstacleBehaviour behaviour = instance.GetComponent<ObstacleBehaviour>();
-                if (behaviour == null)
-                {
-                    Debug.LogError($"BusSim: prefab of {spawnEvent.Definition.id} has no ObstacleBehaviour.", spawnEvent.Definition.prefab);
-                    pool.Release(spawnEvent.Definition.prefab, instance);
-                    continue;
-                }
-
-                behaviour.Init(new ObstacleContext(road, this, spawnEvent));
-                behaviour.Activate();
-                active.Add(new ActiveObstacle { Event = spawnEvent, Instance = instance, Behaviour = behaviour });
-                ObstacleActivated?.Invoke(spawnEvent, behaviour);
+                ActivateEvent(spawnEvent);
             }
+        }
+
+        /// <summary>Activates one event straight away, outside the plan. For tests and tools.</summary>
+        public ObstacleBehaviour ForceSpawn(SpawnEvent spawnEvent)
+        {
+            return ActivateEvent(spawnEvent);
+        }
+
+        private ObstacleBehaviour ActivateEvent(SpawnEvent spawnEvent)
+        {
+            GameObject instance = pool.Get(spawnEvent.Definition.prefab);
+            ObstacleBehaviour behaviour = instance.GetComponent<ObstacleBehaviour>();
+            if (behaviour == null)
+            {
+                Debug.LogError($"BusSim: prefab of {spawnEvent.Definition.id} has no ObstacleBehaviour.", spawnEvent.Definition.prefab);
+                pool.Release(spawnEvent.Definition.prefab, instance);
+                return null;
+            }
+
+            behaviour.Init(new ObstacleContext(road, this, spawnEvent, this));
+            behaviour.Activate();
+            active.Add(new ActiveObstacle { Event = spawnEvent, Instance = instance, Behaviour = behaviour });
+            ObstacleActivated?.Invoke(spawnEvent, behaviour);
+            return behaviour;
         }
 
         private void Release(int index)

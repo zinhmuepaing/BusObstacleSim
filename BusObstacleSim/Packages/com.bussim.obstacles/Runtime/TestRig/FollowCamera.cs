@@ -25,6 +25,14 @@ namespace BusSim.TestRig
             set => target = value;
         }
 
+        public void SetFraming(float behind, float up, float ahead, float lookUp)
+        {
+            distanceBehind = behind;
+            height = up;
+            lookAhead = ahead;
+            lookHeight = lookUp;
+        }
+
         /// <summary>Camera heading in degrees, for tests.</summary>
         public float HeadingYawDegrees => yawDegrees;
 

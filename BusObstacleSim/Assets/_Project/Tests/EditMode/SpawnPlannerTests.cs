@@ -11,7 +11,7 @@ namespace BusSim.Tests
     {
         private const float RoadLength = 1000f;
         private const float RoadWidth = 7f;
-        private const float Corridor = 3.2f;
+        private const float Corridor = 2.5f;
         private const float Margin = 15f;
         private const int PropertySeeds = 1000;
 

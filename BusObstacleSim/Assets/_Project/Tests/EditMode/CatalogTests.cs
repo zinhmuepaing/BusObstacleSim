@@ -27,7 +27,7 @@ namespace BusSim.Tests
         {
             RoadLength = 1000f,
             RoadWidth = 7f,
-            MinCorridor = 3.2f,
+            MinCorridor = 2.5f,
             WindowMargin = 15f,
             MaxAttempts = 8
         };
@@ -52,19 +52,46 @@ namespace BusSim.Tests
         {
             List<ObstacleDefinition> definitions = Definitions();
             Assert.AreEqual(ExpectedTypes, definitions.Count, "catalog size");
-            int layer = LayerMask.NameToLayer("Obstacles");
+            int footprintLayer = LayerMask.NameToLayer("Obstacles");
+            int bodyLayer = LayerMask.NameToLayer("ObstacleBody");
+            Assert.GreaterOrEqual(bodyLayer, 0, "layer ObstacleBody missing");
             foreach (ObstacleDefinition definition in definitions)
             {
-                Assert.IsNotNull(definition.prefab, definition.id);
-                Assert.IsNotNull(definition.prefab.GetComponent<ObstacleBehaviour>(), $"{definition.id} behaviour");
-                BoxCollider box = definition.prefab.GetComponent<BoxCollider>();
-                Assert.IsNotNull(box, $"{definition.id} collider");
-                Assert.AreEqual(definition.footprintWidth, box.size.x, 0.01f, $"{definition.id} collider width");
-                Assert.AreEqual(definition.footprintLength, box.size.z, 0.01f, $"{definition.id} collider length");
-                Assert.IsTrue(definition.prefab.CompareTag("Obstacle"), $"{definition.id} tag");
-                Assert.AreEqual(layer, definition.prefab.layer, $"{definition.id} layer");
+                GameObject prefab = definition.prefab;
+                Assert.IsNotNull(prefab, definition.id);
+                Assert.IsNotNull(prefab.GetComponent<ObstacleBehaviour>(), $"{definition.id} behaviour");
+                Assert.IsNotNull(prefab.GetComponent<PooledPhysicsReset>(), $"{definition.id} pooled reset");
+                Assert.IsTrue(prefab.CompareTag("Obstacle"), $"{definition.id} tag");
+
+                // The footprint trigger matches the definition and sits on its own layer.
+                Transform footprint = prefab.transform.Find("Footprint");
+                Assert.IsNotNull(footprint, $"{definition.id} footprint child");
+                BoxCollider box = footprint.GetComponent<BoxCollider>();
+                Assert.IsTrue(box.isTrigger, $"{definition.id} footprint is a trigger");
+                Assert.AreEqual(definition.footprintWidth, box.size.x, 0.01f, $"{definition.id} footprint width");
+                Assert.AreEqual(definition.footprintLength, box.size.z, 0.01f, $"{definition.id} footprint length");
+                Assert.AreEqual(footprintLayer, footprint.gameObject.layer, $"{definition.id} footprint layer");
+
+                // Every obstacle has real solid colliders, each reporting collisions, on the body layer.
+                int solids = 0;
+                foreach (Collider collider in prefab.GetComponentsInChildren<Collider>(true))
+                {
+                    if (collider.isTrigger)
+                    {
+                        continue;
+                    }
+                    solids++;
+                    Assert.AreEqual(bodyLayer, collider.gameObject.layer, $"{definition.id} {collider.name} layer");
+                    Assert.IsNotNull(collider.GetComponentInParent<ObstacleCollisionReporter>(true), $"{definition.id} {collider.name} reporter");
+                }
+                Assert.Greater(solids, 0, $"{definition.id} has no solid collider");
+
+                // Scripted movers are dynamic bodies on the root so impacts exchange momentum.
                 if (definition.isDynamic)
                 {
+                    Rigidbody body = prefab.GetComponent<Rigidbody>();
+                    Assert.IsNotNull(body, $"{definition.id} mover needs a root Rigidbody");
+                    Assert.IsFalse(body.isKinematic, $"{definition.id} mover must be dynamic");
                     Assert.Greater(definition.triggerTimeToArrival, 0f, $"{definition.id} trigger");
                 }
             }
@@ -132,7 +159,7 @@ namespace BusSim.Tests
                 foreach (Footprint footprint in statics)
                 {
                     Assert.GreaterOrEqual(ClearanceValidator.LargestGap(footprint, statics, 7f, 15f, out _),
-                        3.2f - ClearanceValidator.Tolerance, $"seed {seed} {footprint}");
+                        2.5f - ClearanceValidator.Tolerance, $"seed {seed} {footprint}");
                 }
             }
         }

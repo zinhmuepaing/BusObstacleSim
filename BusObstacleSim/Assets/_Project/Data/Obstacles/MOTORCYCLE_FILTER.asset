@@ -20,8 +20,8 @@ MonoBehaviour:
   dangerLevel: 3
   footprintWidth: 0.8
   footprintLength: 2.1
-  minT: 0
-  maxT: 0
+  minT: 0.3
+  maxT: 0.3
   placeAtRangeEndsOnly: 0
   mirrorOnRightSide: 0
   yawJitterDegrees: 0

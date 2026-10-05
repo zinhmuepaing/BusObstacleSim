@@ -38,8 +38,9 @@ namespace BusSim.Obstacles
             pauseSeconds = secondsOfPause;
         }
 
-        private void Awake()
+        protected override void Awake()
         {
+            base.Awake();
             rig = GetComponent<WalkRig>();
         }
 

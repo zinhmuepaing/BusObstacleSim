@@ -18,9 +18,15 @@ namespace BusSim.Editor
             RoadSceneBuilder.SetupSky();
             ZoneBuilder.CreateZones();
             ObstacleContentBuilder.BuildAll();
-            TestRigBuilder.CreateTestBus();
+            CarBuilder.CreateCar();
             ObstacleSceneBuilder.CreateSpawner();
             Debug.Log("BusSim: demo scene ready. Press Play and drive with W A S D or the arrow keys.");
+        }
+
+        /// <summary>Adds a user layer of this name to the project if it is missing.</summary>
+        public static void EnsureLayer(string layer)
+        {
+            EnsureTagAndLayer(null, layer);
         }
 
         /// <summary>Adds the tag and a user layer of these names to the project if they are missing.</summary>
@@ -35,7 +41,7 @@ namespace BusSim.Editor
 
             SerializedObject tagManager = new SerializedObject(assets[0]);
             SerializedProperty tags = tagManager.FindProperty("tags");
-            bool hasTag = false;
+            bool hasTag = string.IsNullOrEmpty(tag);
             for (int i = 0; i < tags.arraySize; i++)
             {
                 hasTag |= tags.GetArrayElementAtIndex(i).stringValue == tag;

@@ -17,7 +17,7 @@ namespace BusSim.Obstacles
         private float currentS;
         private float speed;
 
-        public override float CurrentS => currentS;
+        protected override float ScriptedS => currentS;
 
         protected override void OnInit()
         {
@@ -35,9 +35,16 @@ namespace BusSim.Obstacles
                 {
                     return;
                 }
+                float appearS = Context.Vehicle.VehicleFrontS - startBehindFront;
+                if (!AreaFree(appearS, Event.T))
+                {
+                    return; // wait for a clear gap rather than appear inside the vehicle
+                }
+
                 HasTriggered = true;
                 TriggerTimeToArrival = timeToArrival;
-                currentS = Context.Vehicle.VehicleFrontS - startBehindFront;
+                currentS = appearS;
+                PlaceAtImmediately(currentS, Event.T, 0f);
                 Show(true);
             }
 

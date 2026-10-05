@@ -1,6 +1,6 @@
 using BusSim.Road;
 using BusSim.Spawning;
-using BusSim.TestRig;
+using BusSim.Vehicle;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -43,9 +43,13 @@ namespace BusSim.Editor
                 profile = AssetDatabase.LoadAssetAtPath<DifficultyProfile>(DefaultProfilePath);
             }
 
-            TestBusController bus = Object.FindAnyObjectByType<TestBusController>();
+            CarController bus = Object.FindAnyObjectByType<CarController>();
             RoadZones zones = road.GetComponent<RoadZones>();
             spawner.Configure(road, bus != null ? bus.transform : null, profile, zones);
+            if (bus != null && bus.Settings != null)
+            {
+                spawner.SetVehicleGeometry(bus.Settings.FrontOffset, bus.Settings.RequiredCorridor);
+            }
             spawner.PreviewPlan();
 
             EditorUtility.SetDirty(spawner);

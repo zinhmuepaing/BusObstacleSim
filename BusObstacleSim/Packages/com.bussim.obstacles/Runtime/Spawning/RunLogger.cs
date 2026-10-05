@@ -12,18 +12,21 @@ namespace BusSim.Spawning
         private readonly Dictionary<string, int> activated = new Dictionary<string, int>();
         private ObstacleSpawner spawner;
         private SpawnPlan plan;
+        private int hits;
 
         private void OnEnable()
         {
             spawner = GetComponent<ObstacleSpawner>();
             spawner.PlanBuilt += OnPlanBuilt;
             spawner.ObstacleActivated += OnActivated;
+            spawner.ObstacleHit += OnHit;
         }
 
         private void OnDisable()
         {
             spawner.PlanBuilt -= OnPlanBuilt;
             spawner.ObstacleActivated -= OnActivated;
+            spawner.ObstacleHit -= OnHit;
             LogActivated();
         }
 
@@ -32,6 +35,7 @@ namespace BusSim.Spawning
             LogActivated();
             plan = builtPlan;
             activated.Clear();
+            hits = 0;
             Debug.Log($"BusSim RunLogger: seed {plan.Seed}. Planned per type:{Format(plan.CountByType())}. " +
                 $"Rejected placements {plan.RejectedPlacements}, skipped events {plan.SkippedEvents}.", this);
         }
@@ -42,13 +46,19 @@ namespace BusSim.Spawning
             activated[spawnEvent.Definition.id] = count + 1;
         }
 
+        private void OnHit(CollisionRecord record)
+        {
+            hits++;
+            Debug.Log($"BusSim RunLogger: HIT #{hits} {record.ObstacleId} (event {record.EventIndex}) at t={record.Time:F1}s, relative speed {record.RelativeSpeed:F1} m/s, vehicle speed {record.VehicleSpeed:F1} m/s.", this);
+        }
+
         private void LogActivated()
         {
             if (plan == null)
             {
                 return;
             }
-            Debug.Log($"BusSim RunLogger: seed {plan.Seed}. Activated per type:{Format(activated)}.", this);
+            Debug.Log($"BusSim RunLogger: seed {plan.Seed}. Activated per type:{Format(activated)}. Collisions {hits}.", this);
         }
 
         private static string Format(Dictionary<string, int> counts)

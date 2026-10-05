@@ -654,8 +654,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.07612219, y: 0.057842374, z: -0.0044233925, w: 0.99540955}
-  m_LocalPosition: {x: -2.8695781, y: 6.05, z: -9.743431}
+  m_LocalRotation: {x: 0.06378475, y: 0.05763939, z: -0.003690201, w: 0.9962909}
+  m_LocalPosition: {x: -1.4793272, y: 3.1, z: 2.1481824}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -717,11 +717,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: acfcf90c20c52d04bb6c2fff9b3ad1a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: BusSim.Runtime::BusSim.TestRig.FollowCamera
-  target: {fileID: 4033993770603417379}
-  distanceBehind: 18
-  height: 6
-  lookAhead: 8
-  lookHeight: 2
+  target: {fileID: 8918429823412033860}
+  distanceBehind: 8
+  height: 3
+  lookAhead: 6
+  lookHeight: 1.2
   headingSmoothTime: 0.2
 --- !u!1 &410087039
 GameObject:
@@ -2791,16 +2791,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: BusSim.Runtime::BusSim.Spawning.ObstacleSpawner
   road: {fileID: 861245957}
-  vehicle: {fileID: 4033993770603417379}
+  vehicle: {fileID: 8918429823412033860}
   profile: {fileID: 11400000, guid: 32a99f1f0b0429348a724cf24605adfa, type: 2}
   zones: {fileID: 861245960}
   seed: 12345
   randomSeedEachRun: 1
   spawnAhead: 150
   despawnBehind: 50
-  vehicleFrontOffset: 6
+  vehicleFrontOffset: 2.1
   speedSmoothingRate: 5
-  minClearCorridor: 3.2
+  minClearCorridor: 2.5
   clearanceWindowMargin: 15
   maxPlacementAttempts: 8
   prewarmPerPrefab: 3
@@ -4990,7 +4990,7 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2085542388}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1001 &4033993770603417378
+--- !u!1001 &8918429823412033859
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -4998,59 +4998,59 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 2463911687868279002, guid: 96f33955b2c38094e837ee930e1c5e4d, type: 3}
-      propertyPath: m_Name
-      value: TestBus
-      objectReference: {fileID: 0}
-    - target: {fileID: 5988472169600109993, guid: 96f33955b2c38094e837ee930e1c5e4d, type: 3}
+    - target: {fileID: 8622042285476610363, guid: e1761d5d21a98274b990a922eddf017f, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.7846899
+      value: -0.5567515
       objectReference: {fileID: 0}
-    - target: {fileID: 5988472169600109993, guid: 96f33955b2c38094e837ee930e1c5e4d, type: 3}
+    - target: {fileID: 8622042285476610363, guid: e1761d5d21a98274b990a922eddf017f, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.05
+      value: 0.1
       objectReference: {fileID: 0}
-    - target: {fileID: 5988472169600109993, guid: 96f33955b2c38094e837ee930e1c5e4d, type: 3}
+    - target: {fileID: 8622042285476610363, guid: e1761d5d21a98274b990a922eddf017f, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 8.135418
+      value: 10.094808
       objectReference: {fileID: 0}
-    - target: {fileID: 5988472169600109993, guid: 96f33955b2c38094e837ee930e1c5e4d, type: 3}
+    - target: {fileID: 8622042285476610363, guid: e1761d5d21a98274b990a922eddf017f, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.99831593
+      value: 0.99833065
       objectReference: {fileID: 0}
-    - target: {fileID: 5988472169600109993, guid: 96f33955b2c38094e837ee930e1c5e4d, type: 3}
+    - target: {fileID: 8622042285476610363, guid: e1761d5d21a98274b990a922eddf017f, type: 3}
       propertyPath: m_LocalRotation.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5988472169600109993, guid: 96f33955b2c38094e837ee930e1c5e4d, type: 3}
+    - target: {fileID: 8622042285476610363, guid: e1761d5d21a98274b990a922eddf017f, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0.058011256
+      value: 0.057757404
       objectReference: {fileID: 0}
-    - target: {fileID: 5988472169600109993, guid: 96f33955b2c38094e837ee930e1c5e4d, type: 3}
+    - target: {fileID: 8622042285476610363, guid: e1761d5d21a98274b990a922eddf017f, type: 3}
       propertyPath: m_LocalRotation.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5988472169600109993, guid: 96f33955b2c38094e837ee930e1c5e4d, type: 3}
+    - target: {fileID: 8622042285476610363, guid: e1761d5d21a98274b990a922eddf017f, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5988472169600109993, guid: 96f33955b2c38094e837ee930e1c5e4d, type: 3}
+    - target: {fileID: 8622042285476610363, guid: e1761d5d21a98274b990a922eddf017f, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5988472169600109993, guid: 96f33955b2c38094e837ee930e1c5e4d, type: 3}
+    - target: {fileID: 8622042285476610363, guid: e1761d5d21a98274b990a922eddf017f, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9186596000373818673, guid: e1761d5d21a98274b990a922eddf017f, type: 3}
+      propertyPath: m_Name
+      value: Car
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 96f33955b2c38094e837ee930e1c5e4d, type: 3}
---- !u!4 &4033993770603417379 stripped
+  m_SourcePrefab: {fileID: 100100000, guid: e1761d5d21a98274b990a922eddf017f, type: 3}
+--- !u!4 &8918429823412033860 stripped
 Transform:
-  m_CorrespondingSourceObject: {fileID: 5988472169600109993, guid: 96f33955b2c38094e837ee930e1c5e4d, type: 3}
-  m_PrefabInstance: {fileID: 4033993770603417378}
+  m_CorrespondingSourceObject: {fileID: 8622042285476610363, guid: e1761d5d21a98274b990a922eddf017f, type: 3}
+  m_PrefabInstance: {fileID: 8918429823412033859}
   m_PrefabAsset: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
@@ -5061,4 +5061,4 @@ SceneRoots:
   - {fileID: 832575519}
   - {fileID: 861245959}
   - {fileID: 1291894220}
-  - {fileID: 4033993770603417378}
+  - {fileID: 8918429823412033859}

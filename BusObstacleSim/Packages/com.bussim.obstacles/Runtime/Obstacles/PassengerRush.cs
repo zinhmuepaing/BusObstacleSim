@@ -33,10 +33,11 @@ namespace BusSim.Obstacles
         private float kerbT;
         private float timer;
 
-        public override float CurrentS => currentS;
+        protected override float ScriptedS => currentS;
 
-        private void Awake()
+        protected override void Awake()
         {
+            base.Awake();
             rig = GetComponent<WalkRig>();
         }
 

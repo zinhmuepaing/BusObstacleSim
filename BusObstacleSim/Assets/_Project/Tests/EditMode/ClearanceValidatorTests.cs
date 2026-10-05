@@ -8,7 +8,7 @@ namespace BusSim.Tests
     {
         private const float RoadWidth = 7f;
         private const float HalfWidth = RoadWidth * 0.5f;
-        private const float Corridor = 3.2f;
+        private const float Corridor = 2.5f;
         private const float Margin = 15f;
 
         private static readonly List<Footprint> None = new List<Footprint>();
@@ -28,25 +28,25 @@ namespace BusSim.Tests
         }
 
         [Test]
-        public void ObstacleLeavingExactly3_2Passes()
+        public void ObstacleLeavingExactlyTheCorridorPasses()
         {
             Footprint candidate = LeftFlush(100f, RoadWidth - Corridor, 4f);
             Assert.IsTrue(ClearanceValidator.IsValid(candidate, None, RoadWidth, Corridor, Margin));
         }
 
         [Test]
-        public void ObstacleLeaving3_19Fails()
+        public void ObstacleLeavingJustUnderTheCorridorFails()
         {
-            Footprint candidate = LeftFlush(100f, RoadWidth - 3.19f, 4f);
+            Footprint candidate = LeftFlush(100f, RoadWidth - (Corridor - 0.01f), 4f);
             Assert.IsFalse(ClearanceValidator.IsValid(candidate, None, RoadWidth, Corridor, Margin));
         }
 
         [Test]
         public void TwoObstaclesThatTogetherBlockFail()
         {
-            // Each alone leaves more than 3.2 m, but side by side the widest gap is 3.0 m.
-            Footprint left = LeftFlush(100f, 2f, 4f);
-            Footprint right = new Footprint(110f, HalfWidth - 1f, 2f, 4f);
+            // Each alone leaves more than the corridor, but side by side the widest gap is 2.2 m.
+            Footprint left = LeftFlush(100f, 2.4f, 4f);
+            Footprint right = new Footprint(110f, HalfWidth - 1.2f, 2.4f, 4f);
             List<Footprint> accepted = new List<Footprint> { left };
 
             Assert.IsTrue(ClearanceValidator.IsValid(left, None, RoadWidth, Corridor, Margin));
@@ -57,25 +57,25 @@ namespace BusSim.Tests
         [Test]
         public void ObstacleJustOutsideWindowIsIgnored()
         {
-            Footprint left = LeftFlush(100f, 2f, 4f); // occupies s 98 to 102
+            Footprint left = LeftFlush(100f, 2.4f, 4f); // occupies s 98 to 102
             // Window of the right obstacle reaches back to its SMin - 15. Place it so that is 102.01.
-            Footprint right = new Footprint(102.01f + Margin + 2f, HalfWidth - 1f, 2f, 4f);
+            Footprint right = new Footprint(102.01f + Margin + 2f, HalfWidth - 1.2f, 2.4f, 4f);
             Assert.IsTrue(ClearanceValidator.IsValid(right, new List<Footprint> { left }, RoadWidth, Corridor, Margin));
         }
 
         [Test]
         public void ObstacleJustInsideWindowCounts()
         {
-            Footprint left = LeftFlush(100f, 2f, 4f);
-            Footprint right = new Footprint(101.99f + Margin + 2f, HalfWidth - 1f, 2f, 4f);
+            Footprint left = LeftFlush(100f, 2.4f, 4f);
+            Footprint right = new Footprint(101.99f + Margin + 2f, HalfWidth - 1.2f, 2.4f, 4f);
             Assert.IsFalse(ClearanceValidator.IsValid(right, new List<Footprint> { left }, RoadWidth, Corridor, Margin));
         }
 
         [Test]
         public void CentreObstacleLeavesTooLittleEitherSide()
         {
-            // 1 m wide in the middle: gaps are 3.0 m each side, neither reaches 3.2 m.
-            Footprint candidate = new Footprint(100f, 0f, 1f, 2f);
+            // 2.2 m wide in the middle: gaps are 2.4 m each side, neither reaches the 2.5 m corridor.
+            Footprint candidate = new Footprint(100f, 0f, 2.2f, 2f);
             Assert.IsFalse(ClearanceValidator.IsValid(candidate, None, RoadWidth, Corridor, Margin));
         }
 

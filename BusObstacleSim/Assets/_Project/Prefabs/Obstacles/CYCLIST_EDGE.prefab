@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 2104587696790814886}
   - component: {fileID: 1867031270408099854}
   - component: {fileID: 6002247626449843285}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: ArmRightMesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -101,7 +101,7 @@ GameObject:
   - component: {fileID: 4935484411632319791}
   - component: {fileID: 7815767254590760200}
   - component: {fileID: 4552173821490735159}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: HandLeft
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -189,7 +189,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 9053901655089878525}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: ArmLeft
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -224,7 +224,7 @@ GameObject:
   - component: {fileID: 8954015207170606620}
   - component: {fileID: 3889219304445178713}
   - component: {fileID: 1425337390923931084}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: DownTube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -314,7 +314,7 @@ GameObject:
   - component: {fileID: 5629443118181983468}
   - component: {fileID: 3058894066820599426}
   - component: {fileID: 4804907811007859919}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: Head
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -404,7 +404,7 @@ GameObject:
   - component: {fileID: 2077314330882617064}
   - component: {fileID: 2967696204623378310}
   - component: {fileID: 4747609051574690557}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: TopTube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -494,7 +494,7 @@ GameObject:
   - component: {fileID: 5918753240056057976}
   - component: {fileID: 6581983301392312398}
   - component: {fileID: 6553755927824547197}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: LegRightMesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -573,6 +573,59 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &3273601241397071374
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1244037705623822519}
+  - component: {fileID: 7350865103663285869}
+  m_Layer: 8
+  m_Name: Footprint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1244037705623822519
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3273601241397071374}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5261513057208838901}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &7350865103663285869
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3273601241397071374}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.7, y: 1.8, z: 1.8}
+  m_Center: {x: 0, y: 0.9, z: 0}
 --- !u!1 &3326941595941682911
 GameObject:
   m_ObjectHideFlags: 0
@@ -584,7 +637,7 @@ GameObject:
   - component: {fileID: 8987075837013342284}
   - component: {fileID: 4696120247772074823}
   - component: {fileID: 5654166090104933568}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: ArmLeftMesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -674,7 +727,7 @@ GameObject:
   - component: {fileID: 7128462218576831920}
   - component: {fileID: 831919617860835584}
   - component: {fileID: 1276331806560578471}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: LegLeftMesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -764,7 +817,7 @@ GameObject:
   - component: {fileID: 9166475865366205189}
   - component: {fileID: 320700139557317345}
   - component: {fileID: 4050617229508821712}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: RearWheel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -854,7 +907,7 @@ GameObject:
   - component: {fileID: 2445198346445147023}
   - component: {fileID: 5009901129235540442}
   - component: {fileID: 6226356508149886768}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: Torso
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -942,7 +995,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 9214211300370670471}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: ArmRight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -975,7 +1028,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 848150539908280362}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: LegRight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1010,7 +1063,7 @@ GameObject:
   - component: {fileID: 6740548325294665405}
   - component: {fileID: 281739444923244737}
   - component: {fileID: 5275141589779739086}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: Handlebar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1100,7 +1153,7 @@ GameObject:
   - component: {fileID: 9051850273005458081}
   - component: {fileID: 1177143371326812722}
   - component: {fileID: 6465816193455715934}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: FrontWheel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1190,7 +1243,7 @@ GameObject:
   - component: {fileID: 6117856158976473771}
   - component: {fileID: 8708961395861266729}
   - component: {fileID: 4111020457421381115}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: ShoeLeft
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1279,8 +1332,11 @@ GameObject:
   m_Component:
   - component: {fileID: 5261513057208838901}
   - component: {fileID: 2605580064328410764}
+  - component: {fileID: 3608047573114951359}
+  - component: {fileID: 8947013657775147892}
+  - component: {fileID: 1734452336962920805}
   - component: {fileID: 1511805300620051969}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: CYCLIST_EDGE
   m_TagString: Obstacle
   m_Icon: {fileID: 0}
@@ -1300,6 +1356,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1244037705623822519}
   - {fileID: 9051850273005458081}
   - {fileID: 9166475865366205189}
   - {fileID: 2077314330882617064}
@@ -1320,6 +1377,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8475f23dff1702649b34219bba233a70, type: 3}
   m_Name: 
   m_EditorClassIdentifier: BusSim.Runtime::BusSim.Obstacles.CyclistRide
+  knockVelocityShare: 0.9
+  knockLaunchSpeed: 2
+  knockLeverHeight: 0.4
+  hitLinearDamping: 1
+  hitAngularDamping: 4
+  settleSeconds: 8
+  settleSpeed: 0.1
+  lostDistance: 30
   rideSpeed: 4
   wobbleAmplitude: 0.12
   wobbleFrequency: 0.6
@@ -1330,6 +1395,59 @@ MonoBehaviour:
   wheelRadius: 0.34
   frontWheel: {fileID: 9051850273005458081}
   rearWheel: {fileID: 9166475865366205189}
+--- !u!114 &3608047573114951359
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6884286739053686175}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 429be7db9760a654a8a532b611e7f02b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: BusSim.Runtime::BusSim.Obstacles.PooledPhysicsReset
+--- !u!54 &8947013657775147892
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6884286739053686175}
+  serializedVersion: 5
+  m_Mass: 95
+  m_LinearDamping: 0
+  m_AngularDamping: 0.5
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 0
+  m_Interpolate: 1
+  m_Constraints: 112
+  m_CollisionDetection: 3
+--- !u!114 &1734452336962920805
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6884286739053686175}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de98db415621c554cb1b96fcd3a29959, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: BusSim.Runtime::BusSim.Obstacles.ObstacleCollisionReporter
+  minRelativeSpeed: 0.5
+  debounceSeconds: 1
 --- !u!65 &1511805300620051969
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1337,7 +1455,7 @@ BoxCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6884286739053686175}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: badddaac3df7dc94198c8d4a96b56055, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -1345,12 +1463,12 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.7, y: 1.8, z: 1.8}
-  m_Center: {x: 0, y: 0.9, z: 0}
+  m_Size: {x: 0.55, y: 1.7, z: 1.7}
+  m_Center: {x: 0, y: 0.85, z: 0}
 --- !u!1 &7103226893500622845
 GameObject:
   m_ObjectHideFlags: 0
@@ -1362,7 +1480,7 @@ GameObject:
   - component: {fileID: 7267952402292789632}
   - component: {fileID: 2355087014123084814}
   - component: {fileID: 6345297202572254079}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: ShoeRight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1452,7 +1570,7 @@ GameObject:
   - component: {fileID: 346064967710893539}
   - component: {fileID: 6264406873636387703}
   - component: {fileID: 1188048381411857956}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: Hair
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1542,7 +1660,7 @@ GameObject:
   - component: {fileID: 8210831242080199220}
   - component: {fileID: 2713905940811537494}
   - component: {fileID: 7470997937738387657}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: HandRight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1630,7 +1748,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3726845912758797988}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: Body
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1668,7 +1786,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1252146401158044090}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: LegLeft
   m_TagString: Untagged
   m_Icon: {fileID: 0}
