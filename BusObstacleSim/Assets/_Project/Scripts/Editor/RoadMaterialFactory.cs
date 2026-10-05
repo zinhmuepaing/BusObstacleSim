@@ -51,7 +51,7 @@ namespace BusSim.Editor
             return set;
         }
 
-        private static Material LoadOrCreateMaterial(
+        internal static Material LoadOrCreateMaterial(
             string materialName, float smoothness, Color colour, System.Func<Texture2D> makeTexture)
         {
             string path = $"{MaterialFolder}/{materialName}.mat";

@@ -15,18 +15,12 @@ namespace BusSim.Editor
         private const string SkyMaterialPath = RoadMaterialFactory.MaterialFolder + "/Sky_Procedural.mat";
         private const string SkyShaderName = "Skybox/Procedural";
 
-        // Gentle S-curve heading +Z from the origin. Scaled at creation so the length matches
-        // RoadSettings.roadLength exactly. Shape data, not a tunable.
-        private static readonly float3[] DefaultKnots =
-        {
-            new float3(0f, 0f, 0f),
-            new float3(0f, 0f, 150f),
-            new float3(40f, 0f, 330f),
-            new float3(40f, 0f, 520f),
-            new float3(-10f, 0f, 720f),
-            new float3(-10f, 0f, 880f),
-            new float3(-10f, 0f, 1000f)
-        };
+        // Default shape: a gentle S-curve x = A * sin(2 pi z / L) * sin(pi z / L). It starts and
+        // ends straight along +Z with no sideways dip. Scaled at creation so the spline length
+        // matches RoadSettings.roadLength exactly. Shape data, not a road tunable.
+        private const int DefaultKnotCount = 9;
+        private const float DefaultShapeLength = 1000f;
+        private const float DefaultSwingMetres = 60f;
 
         [MenuItem("BusSim/Road/Create Road In Scene")]
         public static void CreateRoad()
@@ -57,6 +51,23 @@ namespace BusSim.Editor
             EditorSceneManager.MarkSceneDirty(road.scene);
             Selection.activeObject = road;
             Debug.Log($"BusSim: road created. Spline length {sampler.SplineLength:F2} m, usable length {sampler.Length:F2} m.");
+        }
+
+        [MenuItem("BusSim/Road/Reset Spline To Default Shape")]
+        public static void ResetSpline()
+        {
+            RoadSampler sampler = Object.FindAnyObjectByType<RoadSampler>();
+            if (sampler == null || sampler.Settings == null)
+            {
+                Debug.LogWarning("BusSim: no road in the scene.");
+                return;
+            }
+
+            Undo.RecordObject(sampler.GetComponent<SplineContainer>(), "Reset Road Spline");
+            BuildSpline(sampler.GetComponent<SplineContainer>(), sampler.Settings.roadLength);
+            sampler.GetComponent<RoadMeshBuilder>().Rebuild();
+            EditorSceneManager.MarkSceneDirty(sampler.gameObject.scene);
+            Debug.Log($"BusSim: spline reset. Length {sampler.SplineLength:F2} m.");
         }
 
         [MenuItem("BusSim/Road/Rebuild Road Meshes")]
@@ -116,9 +127,12 @@ namespace BusSim.Editor
         private static void FillSpline(Spline spline, float scale)
         {
             spline.Clear();
-            foreach (float3 knot in DefaultKnots)
+            for (int i = 0; i < DefaultKnotCount; i++)
             {
-                spline.Add(new BezierKnot(knot * scale), TangentMode.AutoSmooth);
+                float z = DefaultShapeLength * i / (DefaultKnotCount - 1);
+                float phase = Mathf.PI * z / DefaultShapeLength;
+                float x = DefaultSwingMetres * Mathf.Sin(2f * phase) * Mathf.Sin(phase);
+                spline.Add(new BezierKnot(new float3(x, 0f, z) * scale), TangentMode.AutoSmooth);
             }
         }
     }

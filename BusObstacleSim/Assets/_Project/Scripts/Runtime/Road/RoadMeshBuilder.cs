@@ -15,11 +15,14 @@ namespace BusSim.Road
         private const string FootpathName = "Footpaths";
         private const string MarkingName = "Markings";
         private const string GroundName = "Ground";
+        private const string GuardName = "EdgeGuard";
 
         [SerializeField] private Material asphaltMaterial;
         [SerializeField] private Material markingMaterial;
         [SerializeField] private Material footpathMaterial;
         [SerializeField] private Material groundMaterial;
+        [Tooltip("Adds mesh colliders to asphalt, footpaths and ground. Markings never collide.")]
+        [SerializeField] private bool addColliders = true;
 
         private RoadSampler sampler;
         private RoadSettings settings;
@@ -75,7 +78,7 @@ namespace BusSim.Road
 
             MeshData asphalt = new MeshData();
             AddStrip(asphalt, -halfWidth, 0f, halfWidth, 0f, false);
-            CreatePart(AsphaltName, asphalt.ToMesh(AsphaltName), asphaltMaterial, true);
+            CreatePart(AsphaltName, asphalt.ToMesh(AsphaltName), asphaltMaterial, true, addColliders);
 
             MeshData footpaths = new MeshData();
             AddStrip(footpaths, halfWidth, 0f, halfWidth, kerbTop, true);
@@ -84,10 +87,34 @@ namespace BusSim.Road
             AddStrip(footpaths, -halfWidth, kerbTop, -halfWidth, 0f, true);
             AddStrip(footpaths, -footpathOuter, kerbTop, -halfWidth, kerbTop, false);
             AddStrip(footpaths, -footpathOuter, groundY, -footpathOuter, kerbTop, true);
-            CreatePart(FootpathName, footpaths.ToMesh(FootpathName), footpathMaterial, true);
+            CreatePart(FootpathName, footpaths.ToMesh(FootpathName), footpathMaterial, true, addColliders);
 
-            CreatePart(MarkingName, BuildMarkings().ToMesh(MarkingName), markingMaterial, false);
-            CreatePart(GroundName, BuildGround().ToMesh(GroundName), groundMaterial, true);
+            if (addColliders)
+            {
+                // Invisible walls facing the road at the outer footpath edges. Vehicles may mount
+                // the kerb onto the footpath but cannot drive off into the surroundings.
+                MeshData guard = new MeshData();
+                AddStrip(guard, footpathOuter, groundY, footpathOuter, settings.edgeGuardHeight, true);
+                AddStrip(guard, -footpathOuter, settings.edgeGuardHeight, -footpathOuter, groundY, true);
+                GameObject guardPart = new GameObject(GuardName);
+                guardPart.transform.SetParent(transform, false);
+                guardPart.isStatic = true;
+                Mesh guardMesh = guard.ToMesh(GuardName);
+                guardPart.AddComponent<MeshFilter>().sharedMesh = guardMesh;
+                guardPart.AddComponent<MeshCollider>().sharedMesh = guardMesh;
+            }
+
+            CreatePart(MarkingName, BuildMarkings().ToMesh(MarkingName), markingMaterial, false, false);
+            Mesh groundMesh = BuildGround().ToMesh(GroundName);
+            GameObject ground = CreatePart(GroundName, groundMesh, groundMaterial, true, false);
+            if (addColliders)
+            {
+                // One huge quad makes a poor mesh collider, so the ground uses a flat box.
+                Bounds bounds = groundMesh.bounds;
+                BoxCollider box = ground.AddComponent<BoxCollider>();
+                box.size = new Vector3(bounds.size.x, settings.groundColliderThickness, bounds.size.z);
+                box.center = new Vector3(bounds.center.x, bounds.center.y - settings.groundColliderThickness * 0.5f, bounds.center.z);
+            }
         }
 
         private void SampleSections()
@@ -228,15 +255,20 @@ namespace BusSim.Road
             return mesh;
         }
 
-        private void CreatePart(string partName, Mesh mesh, Material material, bool castShadows)
+        private GameObject CreatePart(string partName, Mesh mesh, Material material, bool castShadows, bool collide)
         {
             GameObject part = new GameObject(partName);
             part.transform.SetParent(transform, false);
             part.isStatic = true;
             part.AddComponent<MeshFilter>().sharedMesh = mesh;
+            if (collide)
+            {
+                part.AddComponent<MeshCollider>().sharedMesh = mesh;
+            }
             MeshRenderer meshRenderer = part.AddComponent<MeshRenderer>();
             meshRenderer.sharedMaterial = material;
             meshRenderer.shadowCastingMode = castShadows ? ShadowCastingMode.On : ShadowCastingMode.Off;
+            return part;
         }
 
         private void ClearParts()
@@ -245,7 +277,7 @@ namespace BusSim.Road
             {
                 Transform child = transform.GetChild(i);
                 if (child.name != AsphaltName && child.name != FootpathName
-                    && child.name != MarkingName && child.name != GroundName)
+                    && child.name != MarkingName && child.name != GroundName && child.name != GuardName)
                 {
                     continue;
                 }

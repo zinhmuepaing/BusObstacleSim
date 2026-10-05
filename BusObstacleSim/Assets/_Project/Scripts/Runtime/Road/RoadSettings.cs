@@ -20,6 +20,9 @@ namespace BusSim.Road
         [Min(0f)] public float footpathWidth = 2f;
         [Min(0f)] public float kerbHeight = 0.15f;
 
+        [Tooltip("Height of the invisible collider wall at the outer footpath edge. Keeps vehicles in the road corridor.")]
+        [Min(0.1f)] public float edgeGuardHeight = 1.5f;
+
         [Header("Lane markings")]
         [Min(0.01f)] public float markingWidth = 0.15f;
         [Min(0.1f)] public float dashLength = 3f;
@@ -37,6 +40,8 @@ namespace BusSim.Road
         [Min(0f)] public float groundDrop = 0.05f;
         [Min(0f)] public float groundPadding = 200f;
         [Min(0.1f)] public float groundMetresPerTile = 8f;
+        [Tooltip("Thickness of the box collider under the ground quad.")]
+        [Min(0.1f)] public float groundColliderThickness = 1f;
 
         public float RoadWidth => laneCount * laneWidth;
         public float HalfRoadWidth => RoadWidth * 0.5f;
