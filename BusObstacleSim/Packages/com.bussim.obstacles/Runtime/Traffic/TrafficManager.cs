@@ -20,6 +20,7 @@ namespace BusSim.Traffic
         private const float ConflictAhead = 5f;
         private const float OverlapGap = 0.1f;
         private const float KmhPerMetrePerSecond = 3.6f;
+        private const float SameLaneShare = 0.6f;
         private const float HitReleaseSeconds = 25f;
         private const int PrewarmPerPrefab = 2;
         private const int EventIndexBase = 5000;
@@ -394,6 +395,55 @@ namespace BusSim.Traffic
                     leadSpeed = 0f;
                 }
             }
+        }
+
+        /// <summary>The nearest same-direction vehicle behind or just level with the driven vehicle.</summary>
+        public struct FollowerInfo
+        {
+            public bool Present;
+            /// <summary>Bumper-to-bumper distance in metres. Negative while the two overlap lengthwise (it is alongside).</summary>
+            public float Gap;
+            /// <summary>Metres per second the follower is gaining. Negative when it is falling back.</summary>
+            public float ClosingSpeed;
+            public bool Aggressive;
+            /// <summary>-1 in the lane to the left of the driven vehicle, 0 in its lane, 1 to the right.</summary>
+            public int Side;
+        }
+
+        public FollowerInfo NearestBehind(float range, float alongsideAllowance)
+        {
+            FollowerInfo best = new FollowerInfo { Gap = float.PositiveInfinity };
+            if (spawner == null || mainRoad == null)
+            {
+                return best;
+            }
+
+            float laneHalf = mainRoad.Settings.laneWidth * 0.5f;
+            float playerSpeed = Mathf.Max(spawner.VehicleSpeed, 0f);
+            foreach (TrafficVehicle car in active)
+            {
+                if (!car.OnMainRoad || car.Direction < 0 || car.WasHit)
+                {
+                    continue;
+                }
+                float behind = spawner.VehicleS - car.MainRoadS;
+                float gap = behind - (car.Length + settings.playerLength) * 0.5f;
+                if (behind < -alongsideAllowance || gap > range || gap >= best.Gap)
+                {
+                    continue;
+                }
+
+                float sideways = car.LaneT - spawner.VehicleT;
+                best = new FollowerInfo
+                {
+                    Present = true,
+                    Gap = gap,
+                    ClosingSpeed = car.Speed - playerSpeed,
+                    Aggressive = car.Aggressive,
+                    Side = Mathf.Abs(sideways) < laneHalf * SameLaneShare ? 0 : (sideways > 0f ? 1 : -1)
+                };
+            }
+            return best;
         }
 
         /// <summary>The other lane of this car's carriageway, if it is clear enough to move into now.</summary>

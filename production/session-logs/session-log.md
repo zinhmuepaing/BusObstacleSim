@@ -244,3 +244,18 @@ production/session-logs/session-cost.md
 production/session-logs/session-log.md
 ---
 
+## Session End: 20261005_165021
+### Commits
+691426a Add second T-junction, aggressive drivers and chasers, urban ground and dense buildings, harder profiles, Space brake
+69b3517 Add scenery builder; fix blocked scripted movers; traffic review fixes; log KI-8..KI-11
+a15b371 M8: physical car (WheelCollider), solid obstacles with hit reactions, autopilot overtaking
+ce349aa M3-M7: obstacle planner, 14-type catalog, difficulty, zones, UPM package
+2ccd3b2 M2 fixes: chase camera target, snappier bus handling, road shape, edge guard
+c265831 M1: spline road with markings, kerbs, footpaths, sky, RoadSampler and tests
+### Uncommitted Changes
+BusObstacleSim/Assets/Scenes/SampleScene.unity
+BusObstacleSim/Packages/com.bussim.obstacles/Editor/TrafficContentBuilder.cs
+BusObstacleSim/Packages/com.bussim.obstacles/Runtime/Traffic/TrafficManager.cs
+docs/KNOWN_ISSUES.md
+---
+

@@ -92,6 +92,10 @@ namespace BusSim.Editor
             manager.Configure(main, sides, spawner, main.GetComponent<RoadZones>(), settings);
             EditorUtility.SetDirty(manager);
             EditorSceneManager.MarkSceneDirty(manager.gameObject.scene);
+            if (manager.GetComponent<TrafficWarningHud>() == null)
+            {
+                Undo.AddComponent<TrafficWarningHud>(manager.gameObject);
+            }
             Selection.activeObject = manager.gameObject;
         }
 

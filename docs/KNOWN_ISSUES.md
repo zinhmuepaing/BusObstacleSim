@@ -51,6 +51,7 @@ Open items to fix later, plus workarounds learned the hard way. Newest first. Up
 
 ### KI-14 Aggressive traffic and Hard density are only lightly verified
 - One Hard drive (seed 2026, 240 s simulated, about 15 minutes wall clock) logged 5 lane changes, 1 chaser released, 0 collisions and an upright car. The autopilot only reached s=381 because it brakes for nearly every one of the 54 planned events and follows slow traffic (KI-13), so it met few aggressive drivers. Chaser tailgating, cut-ins in front of the player and the Space brake have not been exercised by a person yet. Play it by hand before trusting the tuning (`TrafficSettings`: `aggressiveShare`, `chasers`, `overtakeGap`, `laneChangeClearance`).
+- The rear-traffic warning banner (`TrafficWarningHud`) is verified by 6 EditMode tests and by a stepped Play simulation (a chaser appeared 40 m behind a stopped car, raised "approaching" at 19 m and "tailgating" at 10 m, then rear-ended it at about 15 m/s closing speed). Its on-screen drawing and the horn have not been seen or heard, because the Play loop does not advance while Unity is driven through MCP.
 - Long harness runs now take 10 to 15 minutes of wall-clock time with about 2,400 scenery objects and 40+ traffic cars. Use shorter runs (120 s) or turn the scenery group off for physics checks.
 
 ## Accepted deviations
