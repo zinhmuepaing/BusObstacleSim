@@ -28,6 +28,8 @@ namespace BusSim.Road
         [SerializeField] private Material markingMaterial;
         [SerializeField] private Material footpathMaterial;
         [SerializeField] private Material groundMaterial;
+        [Tooltip("Planted median strip. Falls back to the ground material when empty.")]
+        [SerializeField] private Material grassMaterial;
         [Tooltip("Adds mesh colliders to asphalt, footpaths and median. Markings never collide.")]
         [SerializeField] private bool addColliders = true;
         [SerializeField] private bool buildGround = true;
@@ -68,12 +70,13 @@ namespace BusSim.Road
             }
         }
 
-        public void SetMaterials(Material asphalt, Material marking, Material footpath, Material ground)
+        public void SetMaterials(Material asphalt, Material marking, Material footpath, Material ground, Material grass = null)
         {
             asphaltMaterial = asphalt;
             markingMaterial = marking;
             footpathMaterial = footpath;
             groundMaterial = ground;
+            grassMaterial = grass;
         }
 
         /// <summary>Options for roads that are not the main road (side roads) and the junctions joining this road.</summary>
@@ -187,7 +190,7 @@ namespace BusSim.Road
             MeshData grass = new MeshData();
             float top = kerbTop - settings.medianGrassSink;
             AddStrip(grass, halfWidth + cap, top, inner - cap, top, false, StripKind.Surface);
-            CreatePart(MedianGrassName, grass.ToMesh(MedianGrassName), groundMaterial, true, addColliders);
+            CreatePart(MedianGrassName, grass.ToMesh(MedianGrassName), grassMaterial != null ? grassMaterial : groundMaterial, true, addColliders);
         }
 
         private void SampleSections()

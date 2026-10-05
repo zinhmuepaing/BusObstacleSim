@@ -122,17 +122,53 @@ namespace BusSim.Editor
                     Trigger = 2.5f, MaxBlock = 4f, Danger = 5, MinDifficulty = 1, Weight = 3f, Zone = ZoneType.School
                 }),
                 BuildBusStopBlock(halfRoad),
-                BuildPassengerRush(footpathMiddle)
+                BuildPassengerRush(footpathMiddle),
+                BuildPedestrian(new PedestrianSpec
+                {
+                    Id = "PED_JOGGER", Name = "Jogger crossing fast", Model = "character-male-f", Speed = 2.8f, Scale = 1f, Mass = AdultMass, T = footpathMiddle,
+                    Shirt = new Color(0.9f, 0.3f, 0.1f), Trousers = new Color(0.1f, 0.1f, 0.12f), Hair = new Color(0.1f, 0.07f, 0.05f),
+                    Trigger = 3f, MaxBlock = 4f, Danger = 4, MinDifficulty = 1, Weight = 0.8f
+                }),
+                BuildPedestrian(new PedestrianSpec
+                {
+                    Id = "PED_PHONE_USER", Name = "Distracted phone user", Model = "character-female-c", Speed = 1.2f, Scale = 0.97f, Mass = 65f, T = footpathMiddle,
+                    Shirt = new Color(0.3f, 0.6f, 0.4f), Trousers = new Color(0.2f, 0.2f, 0.3f), Hair = new Color(0.15f, 0.1f, 0.06f),
+                    PauseChance = 0.8f, PauseSeconds = 2f, Trigger = 3.5f, MaxBlock = 9f, Danger = 4, MinDifficulty = 1, Weight = 0.8f
+                })
             };
 
-            BuildProfile("Easy", 0, 4f, definitions, new List<ObstacleCategory>
+            // Types built from models that may be missing in a stripped-down project: skipped when absent.
+            AddIfBuilt(definitions, BuildPedestrianGroup(footpathMiddle));
+            AddIfBuilt(definitions, BuildWheelchairUser(footpathMiddle));
+            AddIfBuilt(definitions, BuildCyclistVariant("CYCLIST_FAST", "Fast cyclist", -halfRoad + 1.1f, 7f, "character-female-b", 3, 1, 0.6f, 0.7f));
+            AddIfBuilt(definitions, BuildModelDebris("DEBRIS_TYRE", "Tyre in the road", "debris-tire", TyreDiameter, TyreMass, 1f, 1f, 0f, 0.8f, 2, 0.7f, halfRoad));
+            AddIfBuilt(definitions, BuildModelDebris("DEBRIS_BUMPER", "Detached bumper", "debris-bumper", BumperLength, BumperMass, 1.0f, 2.0f, 30f, 0.5f, 2, 0.6f, halfRoad));
+            AddIfBuilt(definitions, BuildStoppedModel("DOUBLE_PARKED_GARBAGE_TRUCK", "Garbage truck stopped at the kerb", "garbage-truck",
+                new Color(0.2f, 0.45f, 0.3f), 2.4f, 7f, GarbageTruckMass, true, true, 3, 1, 0.6f, halfRoad));
+            AddIfBuilt(definitions, BuildStoppedModel("AMBULANCE_STOPPED", "Ambulance stopped with lights on", "ambulance",
+                new Color(0.95f, 0.95f, 0.95f), 2f, 5.5f, AmbulanceMass, false, true, 4, 1, 0.4f, halfRoad));
+            AddIfBuilt(definitions, BuildStoppedModel("POLICE_STOP", "Police car at the roadside", "police",
+                new Color(0.1f, 0.15f, 0.4f), 1.9f, 4.8f, 1500f, true, true, 3, 1, 0.4f, halfRoad));
+            AddIfBuilt(definitions, BuildStoppedBus(halfRoad));
+            AddIfBuilt(definitions, BuildPullOut("TAXI_PULLOUT", "Taxi pulling out from the kerb", "taxi", false, PullOutTaxiMass, 4, 1, 0.8f, ZoneType.None, halfRoad));
+            AddIfBuilt(definitions, BuildPullOut("BUS_PULLOUT", "Bus pulling out of the stop", "", true, BusMass, 5, 2, 2f, ZoneType.BusStop, halfRoad));
+
+            BuildProfile("Easy", 0, EasyEventsPerKm, EasyMinGap, definitions, new List<ObstacleCategory>
             {
                 ObstacleCategory.TrafficControl, ObstacleCategory.Debris, ObstacleCategory.StoppedVehicle, ObstacleCategory.Pedestrian
             });
-            BuildProfile("Normal", 1, 8f, definitions, new List<ObstacleCategory>());
-            BuildProfile("Hard", 2, 14f, definitions, new List<ObstacleCategory>());
+            BuildProfile("Normal", 1, NormalEventsPerKm, NormalMinGap, definitions, new List<ObstacleCategory>());
+            BuildProfile("Hard", 2, HardEventsPerKm, HardMinGap, definitions, new List<ObstacleCategory>());
             AssetDatabase.SaveAssets();
             Debug.Log($"BusSim: built {definitions.Count} obstacle types and 3 difficulty profiles.");
+        }
+
+        private static void AddIfBuilt(List<ObstacleDefinition> definitions, ObstacleDefinition definition)
+        {
+            if (definition != null)
+            {
+                definitions.Add(definition);
+            }
         }
 
         // ---------------- obstacle types ----------------
@@ -427,6 +463,311 @@ namespace BusSim.Editor
             return Finish(definition, root);
         }
 
+        // ---------------- extra obstacle types ----------------
+
+        private const float TyreDiameter = 0.75f;
+        private const float BumperLength = 1.7f;
+        private const float TyreMass = 12f;
+        private const float BumperMass = 10f;
+        private const float GarbageTruckMass = 7000f;
+        private const float AmbulanceMass = 2800f;
+        private const float BusMass = 9000f;
+        private const float BusLength = 11f;
+        private const float BusWidth = 2.55f;
+        private const float BusHeight = 3.1f;
+        // The model's nose points along +X or -X; turn it so the front faces +Z (direction of travel).
+        private const float BusYaw = -90f;
+        private const float PullOutTaxiMass = 1400f;
+        private const float GroupSpacing = 0.85f;
+        private const float WheelchairSpeed = 0.9f;
+        private const float WheelchairHeight = 1.3f;
+        private const float PullOutClearAhead = 90f;
+        private const float WaitingTime = 4f;
+
+        /// <summary>A loose car part lying in the road, taken from the car kit. Skipped if the model is missing.</summary>
+        private static ObstacleDefinition BuildModelDebris(string id, string displayName, string model, float longestSide, float mass,
+            float footprintWidth, float footprintLength, float yawJitter, float height, int danger, float weight, float halfRoad)
+        {
+            string path = ModelLibrary.Car(model);
+            if (!ModelLibrary.Exists(path))
+            {
+                return null;
+            }
+            ObstacleDefinition definition = Define(id, displayName, ObstacleCategory.Debris, false,
+                footprintWidth, footprintLength, -halfRoad + 0.6f, halfRoad - 0.6f, false, false, yawJitter, danger, 0, weight);
+            GameObject root = CreateRoot(definition, typeof(StaticObstacle), height);
+            GameObject body = MakeBody(root.transform, "Body", mass);
+            GameObject part = ModelLibrary.SpawnFitted(body.transform, path, longestSide, 0f, "Part", true);
+            ModelLibrary.AddFittedBoxCollider(body, part.transform, bodyMaterial);
+            return Finish(definition, root);
+        }
+
+        /// <summary>A stopped or parked vehicle from the car kit. Kerbside ones sit against the left kerb, the others fill the lane edge.</summary>
+        private static ObstacleDefinition BuildStoppedModel(string id, string displayName, string model, Color fallback, float fallbackWidth, float fallbackLength,
+            float mass, bool kerbside, bool blinking, int danger, int minDifficulty, float weight, float halfRoad)
+        {
+            string path = ModelLibrary.Car(model);
+            if (!ModelLibrary.Exists(path))
+            {
+                return null;
+            }
+            Bounds size = CarBounds(model, fallbackWidth, fallbackLength);
+            float lane = halfRoad * 0.5f;
+            float kerbT = -halfRoad + size.size.x * 0.5f + 0.2f;
+            ObstacleDefinition definition = kerbside
+                ? Define(id, displayName, ObstacleCategory.StoppedVehicle, false, size.size.x + CarFootprintPad, size.size.z + CarFootprintPad,
+                    kerbT, kerbT, false, false, 0f, danger, minDifficulty, weight)
+                : Define(id, displayName, ObstacleCategory.StoppedVehicle, false, size.size.x + CarFootprintPad, size.size.z + CarFootprintPad,
+                    -lane, lane, true, false, 0f, danger, minDifficulty, weight);
+            GameObject root = CreateRoot(definition, typeof(StaticObstacle), size.size.y + 0.2f);
+            GameObject body = MakeParkedBody(root.transform, "Body", mass);
+            CarVisual car = AddCarVisual(body.transform, model, fallbackWidth, fallbackLength, fallback, id);
+            AddBoxCollider(body, car.Bounds.center, car.Bounds.size);
+            if (blinking)
+            {
+                AddBlinker(root, car.Hazards);
+            }
+            return Finish(definition, root);
+        }
+
+        /// <summary>
+        /// The bus model stretched to a real bus: the Quaternius model is a stubby 4 x 1.7 x 1.6 m toy, so it is scaled
+        /// unevenly to BusLength x BusWidth x BusHeight, turned so its long side runs along Z, and painted (the
+        /// FBX materials import as flat grey).
+        /// </summary>
+        private static GameObject SpawnBus(Transform parent, string path, string objectName)
+        {
+            Bounds natural = ModelLibrary.Measure(path, Vector3.one, 0f);
+            bool longAlongX = natural.size.x >= natural.size.z;
+            float longSide = longAlongX ? natural.size.x : natural.size.z;
+            float shortSide = longAlongX ? natural.size.z : natural.size.x;
+            Vector3 scale = longAlongX
+                ? new Vector3(BusLength / longSide, BusHeight / natural.size.y, BusWidth / shortSide)
+                : new Vector3(BusWidth / shortSide, BusHeight / natural.size.y, BusLength / longSide);
+            GameObject bus = ModelLibrary.Spawn(parent, path, scale, longAlongX ? BusYaw : 0f, objectName);
+            if (bus != null)
+            {
+                PaintBus(bus);
+            }
+            return bus;
+        }
+
+        private static void PaintBus(GameObject bus)
+        {
+            Material body = Mat("BusWhite", new Color(0.93f, 0.93f, 0.94f), 0.5f);
+            Material lower = Mat("BusRed", new Color(0.78f, 0.1f, 0.14f), 0.45f);
+            Material glass = Mat("BusGlass", new Color(0.18f, 0.28f, 0.36f), 0.85f);
+            Material dark = Mat("BusDark", new Color(0.12f, 0.12f, 0.13f), 0.3f);
+            Material lamp = Mat("BusLamp", new Color(1f, 0.85f, 0.5f), 0.8f);
+            foreach (Renderer renderer in bus.GetComponentsInChildren<Renderer>())
+            {
+                Material[] materials = renderer.sharedMaterials;
+                for (int i = 0; i < materials.Length; i++)
+                {
+                    string materialName = materials[i] != null ? materials[i].name.ToLowerInvariant() : string.Empty;
+                    materials[i] = materialName switch
+                    {
+                        "top" => body,
+                        "bottom" => lower,
+                        "windows" => glass,
+                        "lights" => lamp,
+                        _ => dark
+                    };
+                }
+                renderer.sharedMaterials = materials;
+            }
+        }
+
+        /// <summary>Size of the painted, stretched bus (width in x, length in z).</summary>
+        private static Bounds BusBounds(string path)
+        {
+            GameObject probe = new GameObject("BusProbe");
+            try
+            {
+                GameObject bus = SpawnBus(probe.transform, path, "Bus");
+                return ModelLibrary.LocalBounds(bus.transform, bus.transform, null);
+            }
+            finally
+            {
+                Object.DestroyImmediate(probe);
+            }
+        }
+
+        /// <summary>A bus standing at the kerb in a bus stop zone (Quaternius model).</summary>
+        private static ObstacleDefinition BuildStoppedBus(float halfRoad)
+        {
+            string path = ModelLibrary.Transport + "Bus.fbx";
+            if (!ModelLibrary.Exists(path))
+            {
+                return null;
+            }
+            float width = BusBounds(path).size.x;
+            float kerbT = -halfRoad + width * 0.5f + 0.2f;
+            ObstacleDefinition definition = Define("BUSSTOP_BUS", "Bus standing at the stop", ObstacleCategory.StoppedVehicle, false,
+                width + CarFootprintPad, BusLength + CarFootprintPad, kerbT, kerbT, false, false, 0f, 2, 0, 2.5f);
+            definition.requiredZone = ZoneType.BusStop;
+            GameObject root = CreateRoot(definition, typeof(StaticObstacle), 3.2f);
+            GameObject body = MakeParkedBody(root.transform, "Body", BusMass);
+            GameObject bus = SpawnBus(body.transform, path, "Bus");
+            ModelLibrary.AddFittedBoxCollider(body, bus.transform, bodyMaterial);
+            return Finish(definition, root);
+        }
+
+        /// <summary>A vehicle parked at the kerb that signals and pulls out ahead of the approaching car.</summary>
+        private static ObstacleDefinition BuildPullOut(string id, string displayName, string carModel, bool bus, float mass,
+            int danger, int minDifficulty, float weight, ZoneType zone, float halfRoad)
+        {
+            Bounds size;
+            string busPath = ModelLibrary.Transport + "Bus.fbx";
+            if (bus)
+            {
+                if (!ModelLibrary.Exists(busPath))
+                {
+                    return null;
+                }
+                size = BusBounds(busPath);
+            }
+            else
+            {
+                if (!ModelLibrary.Exists(ModelLibrary.Car(carModel)))
+                {
+                    return null;
+                }
+                size = CarBounds(carModel, 1.8f, 4.6f);
+            }
+
+            float kerbT = -halfRoad + size.size.x * 0.5f + 0.2f;
+            ObstacleDefinition definition = Define(id, displayName, ObstacleCategory.MovingVehicle, true,
+                size.size.x + CarFootprintPad, size.size.z + CarFootprintPad, kerbT, kerbT, false, false, 0f, danger, minDifficulty, weight);
+            definition.requiredZone = zone;
+            definition.triggerTimeToArrival = WaitingTime;
+            definition.maxBlockSeconds = 10f;
+            definition.minGapAfter = PullOutClearAhead;
+            GameObject root = CreateRoot(definition, typeof(VehiclePullOut), size.size.y + 0.2f);
+
+            Transform visual = new GameObject("Visual").transform;
+            visual.SetParent(root.transform, false);
+            CarVisual car;
+            if (bus)
+            {
+                GameObject model = SpawnBus(visual, busPath, "Bus");
+                car = AddLights(visual, ModelLibrary.LocalBounds(model.transform, visual, null));
+            }
+            else
+            {
+                car = AddCarVisual(visual, carModel, 1.8f, 4.6f, new Color(0.9f, 0.75f, 0.1f), id);
+            }
+            SetRefs(root.GetComponent<VehiclePullOut>(), "indicators", car.Hazards.ToArray());
+            MakeMoverBody(root, mass);
+            AddBoxCollider(root, car.Bounds.center, car.Bounds.size);
+            return Finish(definition, root);
+        }
+
+        /// <summary>A small group crossing together, spread along the road.</summary>
+        private static ObstacleDefinition BuildPedestrianGroup(float footpathMiddle)
+        {
+            string[] models = { "character-male-a", "character-female-c", "character-male-d" };
+            float[] sizes = { 1f, 0.95f, 0.88f };
+            float groupLength = GroupSpacing * (models.Length - 1) + 0.6f;
+            ObstacleDefinition definition = Define("PED_GROUP", "Group crossing together", ObstacleCategory.Pedestrian, true,
+                groupLength, 0.6f, -footpathMiddle, footpathMiddle, true, false, 0f, 5, 1, 0.7f);
+            definition.triggerTimeToArrival = 4f;
+            definition.maxBlockSeconds = 7f;
+            GameObject root = CreateRoot(definition, typeof(PedestrianCrossing), PersonHeight);
+            List<Animator> animators = new List<Animator>();
+            for (int i = 0; i < models.Length; i++)
+            {
+                GameObject person = AddPerson(root.transform, models[i], sizes[i], 0f);
+                if (person == null)
+                {
+                    continue;
+                }
+                float x = (i - (models.Length - 1) * 0.5f) * GroupSpacing;
+                person.transform.localPosition = new Vector3(x, 0f, 0f);
+                animators.Add(person.GetComponentInChildren<Animator>());
+            }
+            if (animators.Count == 0)
+            {
+                Object.DestroyImmediate(root);
+                return null;
+            }
+            AnimatorWalkRig rig = root.AddComponent<AnimatorWalkRig>();
+            rig.SetAnimators(animators.ToArray());
+            root.GetComponent<PedestrianCrossing>().SetMovement(1.3f, 0f, 0f);
+            MakeMoverBody(root, AdultMass * models.Length);
+            for (int i = 0; i < models.Length; i++)
+            {
+                float x = (i - (models.Length - 1) * 0.5f) * GroupSpacing;
+                float height = PersonHeight * sizes[i];
+                AddCapsuleCollider(root, new Vector3(x, height * 0.5f, 0f), PersonRadius * sizes[i], height);
+            }
+            return Finish(definition, root);
+        }
+
+        /// <summary>A wheelchair user crossing slowly: seated character on a wheelchair model.</summary>
+        private static ObstacleDefinition BuildWheelchairUser(float footpathMiddle)
+        {
+            string chairPath = ModelLibrary.Person("wheelchair");
+            if (!ModelLibrary.Exists(chairPath) || !ModelLibrary.Exists(ModelLibrary.Person("character-female-a")))
+            {
+                return null;
+            }
+            ObstacleDefinition definition = Define("PED_WHEELCHAIR", "Wheelchair user crossing", ObstacleCategory.Pedestrian, true,
+                0.7f, 0.7f, -footpathMiddle, footpathMiddle, true, false, 0f, 5, 1, 0.4f);
+            definition.triggerTimeToArrival = 5f;
+            definition.maxBlockSeconds = 12f;
+            GameObject root = CreateRoot(definition, typeof(PedestrianCrossing), WheelchairHeight);
+            GameObject person = AddPerson(root.transform, "character-female-a", 1f, 0f, CharacterAnimation.SeatedController());
+            GameObject chair = ModelLibrary.Spawn(root.transform, chairPath, ModelLibrary.CharacterScale, 0f, "Wheelchair");
+            if (person == null || chair == null)
+            {
+                Object.DestroyImmediate(root);
+                return null;
+            }
+            AnimatorWalkRig rig = root.AddComponent<AnimatorWalkRig>();
+            rig.SetAnimator(person.GetComponentInChildren<Animator>());
+            root.GetComponent<PedestrianCrossing>().SetMovement(WheelchairSpeed, 0f, 0f);
+            MakeMoverBody(root, AdultMass + 25f);
+            AddCapsuleCollider(root, new Vector3(0f, WheelchairHeight * 0.5f, 0f), PersonRadius, WheelchairHeight);
+            return Finish(definition, root);
+        }
+
+        private static ObstacleDefinition BuildCyclistVariant(string id, string displayName, float t, float rideSpeed, string riderModel,
+            int danger, int minDifficulty, float weight, float swerveChance)
+        {
+            ObstacleDefinition definition = Define(id, displayName, ObstacleCategory.Cyclist, true,
+                0.7f, 1.8f, t, t, false, false, 0f, danger, minDifficulty, weight);
+            definition.triggerTimeToArrival = 8f;
+            definition.maxBlockSeconds = 3f;
+            GameObject root = CreateRoot(definition, typeof(CyclistRide), 1.8f);
+            GameObject bike = ModelLibrary.SpawnFitted(root.transform, ModelLibrary.Transport + "Bicycle.fbx", BikeLength, 0f, "Bicycle", true);
+            if (bike != null)
+            {
+                GameObject rider = AddPerson(root.transform, riderModel, RiderScale, 0f, CharacterAnimation.RiderController());
+                if (rider != null)
+                {
+                    rider.transform.localPosition = new Vector3(0f, RiderHeightAboveGround, RiderOffsetZ);
+                }
+            }
+            else
+            {
+                BuildProceduralCyclist(root);
+            }
+            CyclistRide ride = root.GetComponent<CyclistRide>();
+            SetFloat(ride, "rideSpeed", rideSpeed);
+            SetFloat(ride, "swerveChance", swerveChance);
+            MakeMoverBody(root, 95f);
+            AddBoxCollider(root, new Vector3(0f, 0.85f, 0f), new Vector3(0.55f, 1.7f, 1.7f));
+            return Finish(definition, root);
+        }
+
+        private static void SetFloat(Object target, string field, float value)
+        {
+            SerializedObject serialized = new SerializedObject(target);
+            serialized.FindProperty(field).floatValue = value;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
         internal struct PedestrianSpec
         {
             public string Id;
@@ -466,14 +807,39 @@ namespace BusSim.Editor
             return Finish(definition, root);
         }
 
-        private static void BuildProfile(string profileName, int level, float eventsPerKm, List<ObstacleDefinition> definitions, List<ObstacleCategory> categories)
+        // Events per kilometre and the closest two events may be, per level. Hard also favours the moving hazards.
+        private const float EasyEventsPerKm = 6f;
+        private const float NormalEventsPerKm = 12f;
+        private const float HardEventsPerKm = 22f;
+        private const float EasyMinGap = 40f;
+        private const float NormalMinGap = 28f;
+        private const float HardMinGap = 18f;
+        private const float HardMovingWeightBoost = 1.6f;
+
+        private static void BuildProfile(string profileName, int level, float eventsPerKm, float minGap, List<ObstacleDefinition> definitions, List<ObstacleCategory> categories)
         {
             DifficultyProfile profile = EditorAssetUtil.LoadOrCreate<DifficultyProfile>($"{DifficultyFolder}/{profileName}.asset");
             profile.profileName = profileName;
             profile.difficultyLevel = level;
             profile.eventsPerKm = eventsPerKm;
+            profile.minGap = minGap;
             profile.definitions = new List<ObstacleDefinition>(definitions);
             profile.allowedCategories = categories;
+            profile.weightOverrides = new List<DifficultyProfile.WeightOverride>();
+            if (level >= 2)
+            {
+                foreach (ObstacleDefinition definition in definitions)
+                {
+                    if (definition.isDynamic)
+                    {
+                        profile.weightOverrides.Add(new DifficultyProfile.WeightOverride
+                        {
+                            definition = definition,
+                            weight = definition.weight * HardMovingWeightBoost
+                        });
+                    }
+                }
+            }
             EditorUtility.SetDirty(profile);
         }
 
@@ -700,6 +1066,12 @@ namespace BusSim.Editor
 
             GameObject visual = ModelLibrary.Spawn(parent, path, ModelLibrary.CarScale, 0f, "Model");
             Bounds bounds = ModelLibrary.LocalBounds(visual.transform, parent, null);
+            return AddLights(parent, bounds);
+        }
+
+        /// <summary>Amber hazard boxes on the four corners and red brake boxes (off) on the rear of a vehicle with these bounds.</summary>
+        private static CarVisual AddLights(Transform parent, Bounds bounds)
+        {
             Material amber = Mat("Indicator", new Color(1f, 0.55f, 0f), 0.9f);
             Material brake = Mat("BrakeLight", new Color(1f, 0.05f, 0.05f), 0.9f);
             float y = bounds.min.y + bounds.size.y * CarLightHeightShare;
@@ -729,12 +1101,29 @@ namespace BusSim.Editor
             }
 
             Animator animator = person.GetComponentInChildren<Animator>();
-            if (animator != null)
+            if (animator == null)
             {
-                animator.runtimeAnimatorController = controller != null ? controller : CharacterAnimation.PersonController();
-                animator.applyRootMotion = false;
+                // The character FBX files carry clips but no Animator, so the model root gets one here.
+                Transform model = person.transform.childCount > 0 ? person.transform.GetChild(0) : person.transform;
+                animator = model.gameObject.AddComponent<Animator>();
+                animator.avatar = LoadAvatar(ModelLibrary.Person(modelName));
             }
+            animator.runtimeAnimatorController = controller != null ? controller : CharacterAnimation.PersonController();
+            animator.applyRootMotion = false;
+            animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
             return person;
+        }
+
+        private static Avatar LoadAvatar(string modelPath)
+        {
+            foreach (Object asset in AssetDatabase.LoadAllAssetsAtPath(modelPath))
+            {
+                if (asset is Avatar avatar)
+                {
+                    return avatar;
+                }
+            }
+            return null;
         }
 
         /// <summary>Gives a pedestrian root a person model and the matching walk rig, or the procedural person if the model is missing.</summary>

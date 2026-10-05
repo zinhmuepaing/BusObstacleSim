@@ -43,6 +43,16 @@ Open items to fix later, plus workarounds learned the hard way. Newest first. Up
 - Open: side-road cars have no car-following and no spawn clearance check (two entries released close together can overlap); gap acceptance is a one-shot check against 2 to 5 s while the turn takes about 7 s; spawn clearance ignores speed difference; magic numbers in `TrafficManager`, `TrafficVehicle`, `TrafficPlanner` (spawn clearance, hit-release seconds, prewarm count, `Lanes = 2`, `/3.6f`); the traffic hit filter reads `collision.gameObject.layer` (check it if hits with the car go unlogged) [Guessing]; `BoxCastNonAlloc` and `GetComponentInParent` run every FixedUpdate in the autopilot.
 - Harness result (Easy, seed 77): 15 traffic cars planned, 7 active at once, no collisions, but the autopilot only reached s=798 in 160 s because it follows slower traffic and cannot overtake.
 
+### KI-12 `RoadSampler.ProjectToRoad` is unreliable for points far from the road
+- A point 1,000 m along the main road projected onto the 160 m side road returned s=0 and a small t, so the scenery builder thought a building site was inside the side road's corridor and left a 150 m gap. `SceneryBuilder` now measures distance to the side road's centre segment instead. `ProjectToRoad` is fine for points near the road (cars, obstacles, pedestrians). Check it before using it for anything far away.
+
+### KI-13 Test autopilot is slow with traffic on a 3 km road
+- With traffic on, the autopilot averages about 14 km/h over 1,270 m (seed 91 run), because it follows the slowest car ahead (traffic runs 25 to 45 km/h, side-road turners 15 km/h) and cannot overtake. A fast cyclist (CYCLIST_FAST, 7 m/s) held it behind for 143 s. A person driving is not affected. Fix idea: allow the autopilot to overtake into lane 1, or turn traffic off for obstacle acceptance runs (`TrafficManager.trafficEnabled`).
+
+### KI-14 Aggressive traffic and Hard density are only lightly verified
+- One Hard drive (seed 2026, 240 s simulated, about 15 minutes wall clock) logged 5 lane changes, 1 chaser released, 0 collisions and an upright car. The autopilot only reached s=381 because it brakes for nearly every one of the 54 planned events and follows slow traffic (KI-13), so it met few aggressive drivers. Chaser tailgating, cut-ins in front of the player and the Space brake have not been exercised by a person yet. Play it by hand before trusting the tuning (`TrafficSettings`: `aggressiveShare`, `chasers`, `overtakeGap`, `laneChangeClearance`).
+- Long harness runs now take 10 to 15 minutes of wall-clock time with about 2,400 scenery objects and 40+ traffic cars. Use shorter runs (120 s) or turn the scenery group off for physics checks.
+
 ## Accepted deviations
 
 - **KI-4 Car trajectory is not bit-reproducible.** Identical runs end up to about 0.35 m apart after 755 m (0.05 percent). WheelCollider physics is not deterministic across scene resets. The obstacle plan itself IS exactly reproducible (unit tested, FR7). The Plan target of 1 mm for the car was dropped.

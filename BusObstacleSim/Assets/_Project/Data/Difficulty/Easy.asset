@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: BusSim.Runtime::BusSim.Spawning.DifficultyProfile
   profileName: Easy
   difficultyLevel: 0
-  eventsPerKm: 4
+  eventsPerKm: 6
   minGap: 40
   spacingJitter: 0.5
   startBuffer: 80
@@ -34,5 +34,18 @@ MonoBehaviour:
   - {fileID: 11400000, guid: f51de132523fcf843b45aed927c0f27a, type: 2}
   - {fileID: 11400000, guid: eaebd72c920c0a548abb2023c5a19f5a, type: 2}
   - {fileID: 11400000, guid: 0bc3a1bfee472284d88d62ff3276285e, type: 2}
+  - {fileID: 11400000, guid: 33f560743151d7448b5c38daabc1d31c, type: 2}
+  - {fileID: 11400000, guid: ce890bc2b203d5c4b9f75ff03c111740, type: 2}
+  - {fileID: 11400000, guid: 2d15413c211d2b84d8844c605071f2f8, type: 2}
+  - {fileID: 11400000, guid: 486a648e7a90a8741aa1d74f72c57e5b, type: 2}
+  - {fileID: 11400000, guid: c769f7e1b5b0404488cce88f3cf2a6e6, type: 2}
+  - {fileID: 11400000, guid: 166c85825cf86884f9b4343fd3bcea2b, type: 2}
+  - {fileID: 11400000, guid: 101c93632ca02984c8bb27e0df4aa0ad, type: 2}
+  - {fileID: 11400000, guid: 23687b6f757dc944ea230301c5ea2ac5, type: 2}
+  - {fileID: 11400000, guid: 8d0bb7198b1eb2c4bb63ae997ba8aa20, type: 2}
+  - {fileID: 11400000, guid: 127c78ee5d357e5449c4854e78eccf1a, type: 2}
+  - {fileID: 11400000, guid: 5d8a1506ca929384c82e5e68b776b9d9, type: 2}
+  - {fileID: 11400000, guid: af515b860e3745f4a9866df1f44c96a6, type: 2}
+  - {fileID: 11400000, guid: f5404f7f1c53fab4bb6e1d37ebeb9b09, type: 2}
   allowedCategories: 00000000010000000200000003000000i
   weightOverrides: []

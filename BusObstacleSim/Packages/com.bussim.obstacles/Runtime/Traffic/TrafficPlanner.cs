@@ -13,8 +13,15 @@ namespace BusSim.Traffic
         private const float KmhToMetresPerSecond = 1f / 3.6f;
         private const int Lanes = 2;
         private const int PlacementAttempts = 12;
+        private const float ChaserJitter = 0.6f;
 
+        /// <summary>Single-junction convenience overload.</summary>
         public static List<TrafficSpawn> Plan(int runSeed, TrafficSettings settings, float roadLength, float junctionS, bool hasJunction, int modelCount)
+        {
+            return Plan(runSeed, settings, roadLength, hasJunction ? new[] { junctionS } : new float[0], modelCount);
+        }
+
+        public static List<TrafficSpawn> Plan(int runSeed, TrafficSettings settings, float roadLength, IReadOnlyList<float> junctions, int modelCount)
         {
             List<TrafficSpawn> plan = new List<TrafficSpawn>();
             if (settings == null || modelCount <= 0)
@@ -32,11 +39,11 @@ namespace BusSim.Traffic
             AddFlow(plan, rng, settings, TrafficKind.Oncoming, settings.oncomingPerKm, span, from,
                 settings.oncomingMinKmh, settings.oncomingMaxKmh, modelCount);
 
-            if (hasJunction)
+            for (int j = 0; j < junctions.Count; j++)
             {
                 for (int i = 0; i < settings.sideRoadEntries; i++)
                 {
-                    float release = junctionS - Lerp(settings.entryReleaseMin, settings.entryReleaseMax, rng.NextDouble());
+                    float release = junctions[j] - Lerp(settings.entryReleaseMin, settings.entryReleaseMax, rng.NextDouble());
                     plan.Add(new TrafficSpawn
                     {
                         Kind = TrafficKind.SideRoadEntry,
@@ -44,9 +51,25 @@ namespace BusSim.Traffic
                         Lane = 0,
                         SpeedMetresPerSecond = settings.sideRoadKmh * KmhToMetresPerSecond,
                         ModelIndex = rng.Next(modelCount),
-                        AcceptedGapSeconds = Lerp(settings.acceptedGapMin, settings.acceptedGapMax, rng.NextDouble())
+                        AcceptedGapSeconds = Lerp(settings.acceptedGapMin, settings.acceptedGapMax, rng.NextDouble()),
+                        JunctionIndex = j
                     });
                 }
+            }
+
+            // Chasers: released behind the driven vehicle as it passes their s, evenly spread over the run.
+            for (int i = 0; i < settings.chasers; i++)
+            {
+                float slot = (i + 0.5f + (float)(rng.NextDouble() - 0.5) * ChaserJitter) / Math.Max(settings.chasers, 1);
+                plan.Add(new TrafficSpawn
+                {
+                    Kind = TrafficKind.Chaser,
+                    S = from + slot * span,
+                    Lane = rng.Next(Lanes),
+                    SpeedMetresPerSecond = Lerp(settings.aggressiveMinKmh, settings.aggressiveMaxKmh, rng.NextDouble()) * KmhToMetresPerSecond,
+                    ModelIndex = rng.Next(modelCount),
+                    Aggressive = true
+                });
             }
 
             plan.Sort((a, b) => a.S.CompareTo(b.S));
@@ -75,13 +98,18 @@ namespace BusSim.Traffic
                         continue;
                     }
 
+                    bool aggressive = rng.NextDouble() < settings.aggressiveShare;
+                    float speedKmh = aggressive
+                        ? Lerp(settings.aggressiveMinKmh, settings.aggressiveMaxKmh, rng.NextDouble())
+                        : Lerp(minKmh, maxKmh, rng.NextDouble());
                     TrafficSpawn spawn = new TrafficSpawn
                     {
                         Kind = kind,
                         S = s,
                         Lane = lane,
-                        SpeedMetresPerSecond = Lerp(minKmh, maxKmh, rng.NextDouble()) * KmhToMetresPerSecond,
-                        ModelIndex = rng.Next(modelCount)
+                        SpeedMetresPerSecond = speedKmh * KmhToMetresPerSecond,
+                        ModelIndex = rng.Next(modelCount),
+                        Aggressive = aggressive
                     };
                     placed.Add(spawn);
                     break;

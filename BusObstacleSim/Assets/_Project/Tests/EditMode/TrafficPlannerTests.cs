@@ -70,7 +70,7 @@ namespace BusSim.Tests
             {
                 foreach (TrafficSpawn spawn in Plan(seed))
                 {
-                    total += spawn.Kind == TrafficKind.SideRoadEntry ? 0f : 1f;
+                    total += spawn.Kind == TrafficKind.SideRoadEntry || spawn.Kind == TrafficKind.Chaser ? 0f : 1f;
                 }
             }
             float span = RoadLength - settings.startBuffer - settings.endBuffer;
@@ -89,7 +89,7 @@ namespace BusSim.Tests
                     for (int j = i + 1; j < plan.Count; j++)
                     {
                         bool sameLane = plan[i].Kind == plan[j].Kind && plan[i].Lane == plan[j].Lane
-                            && plan[i].Kind != TrafficKind.SideRoadEntry;
+                            && plan[i].Kind != TrafficKind.SideRoadEntry && plan[i].Kind != TrafficKind.Chaser;
                         if (sameLane)
                         {
                             Assert.GreaterOrEqual(Mathf.Abs(plan[i].S - plan[j].S), settings.minSpacing - 0.01f, $"seed {seed}");
@@ -138,6 +138,70 @@ namespace BusSim.Tests
             double first = obstacleStream.NextDouble();
             float expectedIfShared = settings.startBuffer + (RoadLength - settings.startBuffer - settings.endBuffer) * (float)first;
             Assert.That(traffic[0].S, Is.Not.EqualTo(expectedIfShared).Within(0.001f));
+        }
+
+        [Test]
+        public void EachJunctionGetsItsOwnSideRoadEntries()
+        {
+            float[] junctions = { 300f, 800f };
+            for (int seed = 0; seed < Seeds; seed++)
+            {
+                int[] perJunction = new int[junctions.Length];
+                foreach (TrafficSpawn spawn in TrafficPlanner.Plan(seed, settings, RoadLength, junctions, Models))
+                {
+                    if (spawn.Kind == TrafficKind.SideRoadEntry)
+                    {
+                        perJunction[spawn.JunctionIndex]++;
+                        Assert.Less(spawn.S, junctions[spawn.JunctionIndex]);
+                    }
+                }
+                Assert.AreEqual(settings.sideRoadEntries, perJunction[0]);
+                Assert.AreEqual(settings.sideRoadEntries, perJunction[1]);
+            }
+        }
+
+        [Test]
+        public void ChasersAreAggressiveAndFast()
+        {
+            for (int seed = 0; seed < Seeds; seed++)
+            {
+                int chasers = 0;
+                foreach (TrafficSpawn spawn in Plan(seed))
+                {
+                    if (spawn.Kind != TrafficKind.Chaser)
+                    {
+                        continue;
+                    }
+                    chasers++;
+                    Assert.IsTrue(spawn.Aggressive);
+                    Assert.GreaterOrEqual(spawn.SpeedMetresPerSecond, settings.aggressiveMinKmh / 3.6f - 0.001f);
+                }
+                Assert.AreEqual(settings.chasers, chasers);
+            }
+        }
+
+        [Test]
+        public void AggressiveShareMatchesTheSettingAndAggressiveDriversAreFaster()
+        {
+            int flow = 0;
+            int aggressive = 0;
+            foreach (int seed in new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 })
+            {
+                foreach (TrafficSpawn spawn in Plan(seed))
+                {
+                    if (spawn.Kind != TrafficKind.SameDirection && spawn.Kind != TrafficKind.Oncoming)
+                    {
+                        continue;
+                    }
+                    flow++;
+                    if (spawn.Aggressive)
+                    {
+                        aggressive++;
+                        Assert.GreaterOrEqual(spawn.SpeedMetresPerSecond, settings.aggressiveMinKmh / 3.6f - 0.001f);
+                    }
+                }
+            }
+            Assert.AreEqual(settings.aggressiveShare, (float)aggressive / flow, 0.1f);
         }
     }
 }

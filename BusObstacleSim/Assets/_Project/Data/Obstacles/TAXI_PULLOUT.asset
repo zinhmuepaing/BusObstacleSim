@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d66d4174bbc767f40b8632cc0c946044, type: 3}
+  m_Name: TAXI_PULLOUT
+  m_EditorClassIdentifier: BusSim.Runtime::BusSim.Obstacles.ObstacleDefinition
+  id: TAXI_PULLOUT
+  displayName: Taxi pulling out from the kerb
+  category: 5
+  prefab: {fileID: 3863282118046383576, guid: aac20edf16f57704cae7b1be1afb74cc, type: 3}
+  isDynamic: 1
+  dangerLevel: 4
+  footprintWidth: 1.9000001
+  footprintLength: 4.3624988
+  minT: -2.3999999
+  maxT: -2.3999999
+  placeAtRangeEndsOnly: 0
+  mirrorOnRightSide: 0
+  yawJitterDegrees: 0
+  requiredZone: 0
+  weight: 0.8
+  minDifficulty: 1
+  minGapAfter: 90
+  maxBlockSeconds: 10
+  triggerTimeToArrival: 4

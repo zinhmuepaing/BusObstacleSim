@@ -4,7 +4,8 @@ namespace BusSim.Traffic
     {
         SameDirection = 0,
         Oncoming = 1,
-        SideRoadEntry = 2
+        SideRoadEntry = 2,
+        Chaser = 3
     }
 
     /// <summary>One planned ambient vehicle.</summary>
@@ -13,7 +14,7 @@ namespace BusSim.Traffic
         public TrafficKind Kind;
 
         /// <summary>
-        /// Main-road s where the vehicle starts (same direction and oncoming). For a side-road entry it is
+        /// Main-road s where the vehicle starts (same direction and oncoming). For a side-road entry or a chaser it is
         /// the driven vehicle's s at which the vehicle is released.
         /// </summary>
         public float S;
@@ -26,6 +27,12 @@ namespace BusSim.Traffic
 
         /// <summary>Gap this driver accepts at the give-way line, in seconds. Only used by side-road entries.</summary>
         public float AcceptedGapSeconds;
+
+        /// <summary>Drives fast, tailgates and weaves between lanes.</summary>
+        public bool Aggressive;
+
+        /// <summary>Which junction a side-road entry uses (index into the manager's junction list).</summary>
+        public int JunctionIndex;
 
         public int Index;
     }

@@ -55,18 +55,19 @@ namespace BusSim.Editor
         public static void CreateTrafficInScene()
         {
             RoadSampler main = null;
-            RoadSampler side = null;
+            List<RoadSampler> sides = new List<RoadSampler>();
             foreach (RoadSampler sampler in Object.FindObjectsByType<RoadSampler>())
             {
-                if (sampler.gameObject.name == "SideRoad")
+                if (JunctionBuilder.IsSideRoad(sampler.gameObject))
                 {
-                    side = sampler;
+                    sides.Add(sampler);
                 }
                 else
                 {
                     main = sampler;
                 }
             }
+            sides.Sort((x, y) => string.CompareOrdinal(x.gameObject.name, y.gameObject.name));
             ObstacleSpawner spawner = Object.FindAnyObjectByType<ObstacleSpawner>();
             if (main == null || spawner == null)
             {
@@ -88,7 +89,7 @@ namespace BusSim.Editor
                 Undo.RegisterCreatedObjectUndo(go, "Create Traffic");
                 manager = go.AddComponent<TrafficManager>();
             }
-            manager.Configure(main, side, spawner, main.GetComponent<RoadZones>(), settings);
+            manager.Configure(main, sides, spawner, main.GetComponent<RoadZones>(), settings);
             EditorUtility.SetDirty(manager);
             EditorSceneManager.MarkSceneDirty(manager.gameObject.scene);
             Selection.activeObject = manager.gameObject;

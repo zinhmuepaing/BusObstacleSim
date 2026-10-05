@@ -19,13 +19,14 @@ namespace BusSim.Traffic
         private const float LaneBandMargin = 0.4f;
         private const float ConflictAhead = 5f;
         private const float OverlapGap = 0.1f;
+        private const float KmhPerMetrePerSecond = 3.6f;
         private const float HitReleaseSeconds = 25f;
         private const int PrewarmPerPrefab = 2;
         private const int EventIndexBase = 5000;
 
         [SerializeField] private RoadSampler mainRoad;
-        [Tooltip("Optional. Side-road traffic only runs when the side road and a Junction zone exist.")]
-        [SerializeField] private RoadSampler sideRoad;
+        [Tooltip("Optional. One entry per T-junction on the left of the main road. The junction position is where the side road meets the main road.")]
+        [SerializeField] private List<RoadSampler> sideRoads = new List<RoadSampler>();
         [SerializeField] private ObstacleSpawner spawner;
         [SerializeField] private RoadZones zones;
         [SerializeField] private TrafficSettings settings;
@@ -38,22 +39,27 @@ namespace BusSim.Traffic
         private bool[] spawned = new bool[0];
         private ObjectPool pool;
         private SpawnPlan lastObstaclePlan;
-        private float junctionS;
-        private bool hasJunction;
+        private float[] junctionS = new float[0];
 
         public RoadSampler MainRoad => mainRoad;
-        public RoadSampler SideRoad => sideRoad;
         public TrafficSettings Settings => settings;
         public IReadOnlyList<TrafficSpawn> Plan => plan;
         public int ActiveCount => active.Count;
-        public float JunctionS => junctionS;
-        public float TurnEndS => junctionS + settings.turnEndPast;
-        public float SameDirectionCruiseSpeed => settings.sameDirectionMaxKmh / 3.6f;
 
-        public void Configure(RoadSampler main, RoadSampler side, ObstacleSpawner obstacleSpawner, RoadZones roadZones, TrafficSettings trafficSettings)
+        /// <summary>Lane changes started and chasers released this run, for logs and tests.</summary>
+        public int LaneChangesStarted { get; private set; }
+        public int ChasersReleased { get; private set; }
+        public int JunctionCount => junctionS.Length;
+        public float SameDirectionCruiseSpeed => settings.sameDirectionMaxKmh / KmhPerMetrePerSecond;
+
+        public float JunctionS(int index) => junctionS[index];
+        public float TurnEndS(int index) => junctionS[index] + settings.turnEndPast;
+        public RoadSampler SideRoad(int index) => sideRoads[index];
+
+        public void Configure(RoadSampler main, IEnumerable<RoadSampler> sides, ObstacleSpawner obstacleSpawner, RoadZones roadZones, TrafficSettings trafficSettings)
         {
             mainRoad = main;
-            sideRoad = side;
+            sideRoads = new List<RoadSampler>(sides);
             spawner = obstacleSpawner;
             zones = roadZones;
             settings = trafficSettings;
@@ -97,6 +103,8 @@ namespace BusSim.Traffic
             {
                 Release(i);
             }
+            LaneChangesStarted = 0;
+            ChasersReleased = 0;
             pool?.Clear();
             pool = new ObjectPool(transform);
             foreach (GameObject prefab in settings.vehiclePrefabs)
@@ -105,26 +113,19 @@ namespace BusSim.Traffic
             }
 
             lastObstaclePlan = obstaclePlan;
-            FindJunction();
-            plan = TrafficPlanner.Plan(spawner.Seed, settings, mainRoad.Length, junctionS, hasJunction && sideRoad != null, settings.vehiclePrefabs.Count);
+            FindJunctions();
+            plan = TrafficPlanner.Plan(spawner.Seed, settings, mainRoad.Length, junctionS, settings.vehiclePrefabs.Count);
             spawned = new bool[plan.Count];
         }
 
-        private void FindJunction()
+        /// <summary>A junction is where each side road starts on the main road's edge.</summary>
+        private void FindJunctions()
         {
-            hasJunction = false;
-            if (zones == null)
+            sideRoads.RemoveAll(side => side == null);
+            junctionS = new float[sideRoads.Count];
+            for (int i = 0; i < sideRoads.Count; i++)
             {
-                return;
-            }
-            foreach (RoadZone zone in zones.Zones)
-            {
-                if (zone.type == ZoneType.Junction)
-                {
-                    junctionS = (zone.sStart + zone.sEnd) * 0.5f;
-                    hasJunction = true;
-                    return;
-                }
+                junctionS[i] = mainRoad.ProjectToRoad(sideRoads[i].GetPoint(0f, 0f)).s;
             }
         }
 
@@ -147,6 +148,15 @@ namespace BusSim.Traffic
                     {
                         spawned[i] = true;
                         SpawnEntry(entry);
+                    }
+                    continue;
+                }
+                if (entry.Kind == TrafficKind.Chaser)
+                {
+                    if (playerS >= entry.S)
+                    {
+                        spawned[i] = true;
+                        SpawnChaser(entry, playerS);
                     }
                     continue;
                 }
@@ -195,22 +205,45 @@ namespace BusSim.Traffic
                 return;
             }
             vehicle.Init(this, settings, mainRoad, LaneCentre(entry), oncoming ? -1 : 1, entry.S, entry.SpeedMetresPerSecond,
-                entry.SpeedMetresPerSecond, TrafficVehicle.Phase.Cruising, 0f, VehicleId(entry), entry.Index);
+                entry.SpeedMetresPerSecond, TrafficVehicle.Phase.Cruising, 0f, VehicleId(entry), entry.Index, entry.Aggressive);
             active.Add(vehicle);
             hitTimes.Add(-1f);
         }
 
+        /// <summary>An aggressive driver appears behind the driven vehicle, if there is room, and drives up to its tail.</summary>
+        private void SpawnChaser(TrafficSpawn entry, float playerS)
+        {
+            float s = playerS - settings.chaserDistance;
+            if (s < 0f)
+            {
+                return;
+            }
+            entry.S = s;
+            if (!LaneIsClear(entry))
+            {
+                return;
+            }
+            SpawnLaneVehicle(entry);
+            ChasersReleased++;
+        }
+
         private void SpawnEntry(TrafficSpawn entry)
         {
+            if (entry.JunctionIndex >= sideRoads.Count)
+            {
+                return;
+            }
             TrafficVehicle vehicle = TakeVehicle(entry);
             if (vehicle == null)
             {
                 return;
             }
             // Inbound traffic on the side road keeps left of its own travel, which is its +t side.
-            float laneT = sideRoad.Settings.GetLaneCentreT(sideRoad.Settings.laneCount - 1);
-            vehicle.Init(this, settings, sideRoad, laneT, -1, settings.sideRoadStartS, entry.SpeedMetresPerSecond,
-                entry.SpeedMetresPerSecond, TrafficVehicle.Phase.GivingWay, entry.AcceptedGapSeconds, VehicleId(entry), entry.Index);
+            RoadSampler side = sideRoads[entry.JunctionIndex];
+            float laneT = side.Settings.GetLaneCentreT(side.Settings.laneCount - 1);
+            vehicle.Init(this, settings, side, laneT, -1, settings.sideRoadStartS, entry.SpeedMetresPerSecond,
+                entry.SpeedMetresPerSecond, TrafficVehicle.Phase.GivingWay, entry.AcceptedGapSeconds, VehicleId(entry), entry.Index,
+                false, entry.JunctionIndex);
             active.Add(vehicle);
             hitTimes.Add(-1f);
         }
@@ -363,6 +396,83 @@ namespace BusSim.Traffic
             }
         }
 
+        /// <summary>The other lane of this car's carriageway, if it is clear enough to move into now.</summary>
+        public bool TryPickLane(TrafficVehicle car, out float laneT)
+        {
+            LaneCentres(car.Direction, out float first, out float second);
+            laneT = Mathf.Abs(car.LaneT - first) < Mathf.Abs(car.LaneT - second) ? second : first;
+            bool clear = LaneChangeClear(car, laneT);
+            LaneChangesStarted += clear ? 1 : 0;
+            return clear;
+        }
+
+        private void LaneCentres(int direction, out float first, out float second)
+        {
+            RoadSettings road = mainRoad.Settings;
+            if (direction > 0)
+            {
+                first = road.GetLaneCentreT(0);
+                second = road.GetLaneCentreT(1);
+            }
+            else
+            {
+                first = road.GetOncomingLaneCentreT(0);
+                second = road.GetOncomingLaneCentreT(1);
+            }
+        }
+
+        /// <summary>
+        /// True if nothing in the target lane is too close ahead or behind the car (the margin grows with the speed
+        /// difference), including the driven vehicle and static obstacles.
+        /// </summary>
+        private bool LaneChangeClear(TrafficVehicle car, float targetT)
+        {
+            float laneHalf = mainRoad.Settings.laneWidth * 0.5f;
+            foreach (TrafficVehicle other in active)
+            {
+                if (other == car || !other.OnMainRoad || other.Direction != car.Direction)
+                {
+                    continue;
+                }
+                bool inTarget = Mathf.Abs(other.LaneT - targetT) < laneHalf || Mathf.Abs(other.TargetLaneT - targetT) < laneHalf;
+                if (inTarget && !SpaceFor(car, other.MainRoadS, other.Length, other.Speed))
+                {
+                    return false;
+                }
+            }
+
+            if (car.Direction > 0)
+            {
+                if (Mathf.Abs(spawner.VehicleT - targetT) < laneHalf + LaneBandMargin
+                    && !SpaceFor(car, spawner.VehicleS, settings.playerLength, Mathf.Max(spawner.VehicleSpeed, 0f)))
+                {
+                    return false;
+                }
+
+                float reach = settings.overtakeGap + car.Speed * settings.laneChangeGapSeconds;
+                float carFront = car.S + car.Length * 0.5f;
+                foreach (Footprint footprint in obstacleFootprints)
+                {
+                    bool inLane = Mathf.Abs(footprint.T - targetT) < footprint.Width * 0.5f + car.Width * 0.5f;
+                    if (inLane && footprint.SMax > car.S - car.Length && footprint.SMin < carFront + reach)
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        /// <summary>Is there room for `car` beside or between a vehicle at s with this length and speed?</summary>
+        private bool SpaceFor(TrafficVehicle car, float otherS, float otherLength, float otherSpeed)
+        {
+            float ahead = (otherS - car.S) * car.Direction;
+            float halfLengths = (car.Length + otherLength) * 0.5f;
+            float closing = ahead >= 0f ? car.Speed - otherSpeed : otherSpeed - car.Speed;
+            float needed = settings.laneChangeClearance + Mathf.Max(0f, closing) * settings.laneChangeGapSeconds;
+            return Mathf.Abs(ahead) - halfLengths >= needed;
+        }
+
         /// <summary>
         /// True if a side-road driver may pull out: nothing in the main road's left lane would arrive at the junction
         /// sooner than the driver's accepted gap, and the turn area is clear.
@@ -372,12 +482,14 @@ namespace BusSim.Traffic
             float lane0 = mainRoad.Settings.GetLaneCentreT(0);
             float laneHalf = mainRoad.Settings.laneWidth * 0.5f;
             float needed = car.AcceptedGapSeconds;
+            float junction = junctionS[car.JunctionIndex];
+            float turnEnd = TurnEndS(car.JunctionIndex);
 
             if (Mathf.Abs(spawner.VehicleT - lane0) < laneHalf + LaneBandMargin)
             {
-                float distance = junctionS - spawner.VehicleFrontS;
+                float distance = junction - spawner.VehicleFrontS;
                 float arrival = distance / Mathf.Max(spawner.VehicleSpeed, 0.5f);
-                bool inTurnArea = spawner.VehicleFrontS > junctionS - ConflictAhead && spawner.VehicleFrontS - settings.playerLength < TurnEndS;
+                bool inTurnArea = spawner.VehicleFrontS > junction - ConflictAhead && spawner.VehicleFrontS - settings.playerLength < turnEnd;
                 if (inTurnArea || (distance > 0f && arrival < needed))
                 {
                     return false;
@@ -391,18 +503,19 @@ namespace BusSim.Traffic
                     continue;
                 }
                 bool turning = other.CurrentPhase == TrafficVehicle.Phase.Turning;
-                if (!turning && Mathf.Abs(other.LaneT - lane0) >= laneHalf)
+                bool inLane0 = Mathf.Abs(other.LaneT - lane0) < laneHalf || Mathf.Abs(other.TargetLaneT - lane0) < laneHalf;
+                if (!turning && !inLane0)
                 {
                     continue;
                 }
 
                 float front = other.MainRoadS + other.Length * 0.5f;
                 float rear = other.MainRoadS - other.Length * 0.5f;
-                if (front > junctionS - ConflictAhead && rear < TurnEndS)
+                if (front > junction - ConflictAhead && rear < turnEnd)
                 {
                     return false; // someone is in or at the turn area
                 }
-                float distance = junctionS - front;
+                float distance = junction - front;
                 if (distance > 0f && distance / Mathf.Max(other.Speed, 0.5f) < needed)
                 {
                     return false;
@@ -415,10 +528,11 @@ namespace BusSim.Traffic
         public void BuildTurn(TrafficVehicle car)
         {
             float lane0 = mainRoad.Settings.GetLaneCentreT(0);
+            float junction = junctionS[car.JunctionIndex];
             Vector3 start = car.transform.position;
-            start.y = mainRoad.GetPoint(junctionS, lane0).y;
-            Vector3 end = mainRoad.GetPoint(TurnEndS, lane0);
-            Vector3 corner = mainRoad.GetPoint(junctionS + sideRoad.Settings.laneWidth * 0.5f, lane0);
+            start.y = mainRoad.GetPoint(junction, lane0).y;
+            Vector3 end = mainRoad.GetPoint(TurnEndS(car.JunctionIndex), lane0);
+            Vector3 corner = mainRoad.GetPoint(junction + sideRoads[car.JunctionIndex].Settings.laneWidth * 0.5f, lane0);
 
             float total = 0f;
             Vector3 previous = start;

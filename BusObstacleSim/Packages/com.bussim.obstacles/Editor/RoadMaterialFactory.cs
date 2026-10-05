@@ -27,6 +27,7 @@ namespace BusSim.Editor
             public Material Marking;
             public Material Footpath;
             public Material Ground;
+            public Material Grass;
         }
 
         public static Set LoadOrCreate()
@@ -43,8 +44,13 @@ namespace BusSim.Editor
                     ProceduralTextures.CreatePavers("Road_Footpath_Albedo", TextureSize, 8, 2, 23,
                         new Color(0.50f, 0.49f, 0.47f), new Color(0.66f, 0.64f, 0.61f),
                         new Color(0.32f, 0.31f, 0.30f), 0.06f)),
-                Ground = LoadOrCreateMaterial("Road_Ground", GroundSmoothness, Color.white, () =>
-                    ProceduralTextures.CreateNoise("Road_Ground_Albedo", TextureSize, 6, 5, 37,
+                // The land around the road is paved city ground, not lawn; grass only grows in the median and planters.
+                Ground = LoadOrCreateMaterial("Road_City", GroundSmoothness, Color.white, () =>
+                    ProceduralTextures.CreatePavers("Road_City_Albedo", TextureSize, 6, 2, 41,
+                        new Color(0.43f, 0.43f, 0.42f), new Color(0.56f, 0.55f, 0.53f),
+                        new Color(0.28f, 0.28f, 0.28f), 0.05f)),
+                Grass = LoadOrCreateMaterial("Road_Grass", GroundSmoothness, Color.white, () =>
+                    ProceduralTextures.CreateNoise("Road_Grass_Albedo", TextureSize, 6, 5, 37,
                         new Color(0.16f, 0.26f, 0.09f), new Color(0.28f, 0.38f, 0.14f), 0.08f))
             };
 

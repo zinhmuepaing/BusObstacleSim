@@ -16,18 +16,27 @@ namespace BusSim.Editor
     public static class SceneryBuilder
     {
         private const string RootName = "Scenery";
-        private const string SideRoadName = "SideRoad";
         private const string FacadeMaterialPrefix = "Hdb_";
         private const int FixedSeed = 20261005;
 
         private const float LampSpacing = 36f;
         private const float TreeSpacing = 11f;
         private const float MedianTreeSpacing = 14f;
-        private const float BuildingSetback = 6f;
-        private const float BuildingGap = 4f;
+        private const float BuildingGap = 0.6f;
+        private const float BuildingGapJitter = 2f;
+        private const float BlockedStep = 12f;
+        private const float ShopShare = 0.45f;
+        private const float BackdropOffset = 105f;
+        private const float BackdropScale = 1.6f;
+        private const float FlatClearance = 30f;
+        private const float TowerClearance = 40f;
+        private const float TowerSpacing = 110f;
+        private const float SideRoadStartS = 22f;
+        // Setbacks (metres behind the footpath edge) of the building rows: a front row and a second row behind it.
+        private static readonly float[] BuildingRowSetbacks = { 6f, 24f };
         private const float TowerRowOffset = 75f;
         private const float HdbRowOffset = 38f;
-        private const float HdbSpacing = 150f;
+        private const float HdbSpacing = 70f;
         private const float EndMargin = 20f;
         private const float LampInset = 0.5f;
         private const float TreeInset = 0.5f;
@@ -35,8 +44,7 @@ namespace BusSim.Editor
         private const float JunctionClearance = 6f;
         private const float TreeScaleMin = 0.85f;
         private const float TreeScaleMax = 1.25f;
-        private const float BusStopStart = 375f;
-        private const float BusStopEnd = 445f;
+        private const float BusStopMargin = 5f;
 
         // Hdb block: 6 m bays, 3 m floors.
         private const float BayWidth = 6f;
@@ -56,12 +64,12 @@ namespace BusSim.Editor
         public static void CreateScenery()
         {
             RoadSampler main = null;
-            RoadSampler side = null;
+            SideRoads.Clear();
             foreach (RoadSampler sampler in Object.FindObjectsByType<RoadSampler>())
             {
-                if (sampler.gameObject.name == SideRoadName)
+                if (JunctionBuilder.IsSideRoad(sampler.gameObject))
                 {
-                    side = sampler;
+                    SideRoads.Add(sampler);
                 }
                 else
                 {
@@ -73,6 +81,7 @@ namespace BusSim.Editor
                 Debug.LogError("BusSim: create the road first.");
                 return;
             }
+            FindJunctions(main);
 
             GameObject existing = GameObject.Find(RootName);
             if (existing != null)
@@ -86,11 +95,10 @@ namespace BusSim.Editor
             Material[] facades = BuildFacadeMaterials();
             BuildFoliageMaterials();
 
-            float junctionS = FindJunction(main, out bool hasJunction);
-            DressRoad(main, side, root.transform, rng, facades, true, hasJunction, junctionS, 0f);
-            if (side != null)
+            DressRoad(main, root.transform, rng, facades, true, 0f);
+            foreach (RoadSampler side in SideRoads)
             {
-                DressRoad(side, null, root.transform, rng, facades, false, false, 0f, side.Settings.roadLength > 0f ? 22f : 0f);
+                DressRoad(side, root.transform, rng, facades, false, SideRoadStartS);
             }
 
             foreach (Transform child in root.GetComponentsInChildren<Transform>(true))
@@ -106,43 +114,71 @@ namespace BusSim.Editor
             return root.GetComponentsInChildren<Transform>(true).Length - 1;
         }
 
-        private static float FindJunction(RoadSampler main, out bool found)
+        private static bool InZone(RoadSampler road, ZoneType type, float s, float margin)
         {
-            found = false;
+            RoadZones zones = road.GetComponent<RoadZones>();
+            if (zones == null)
+            {
+                return false;
+            }
+            foreach (RoadZone zone in zones.Zones)
+            {
+                if (zone.type == type && s > zone.sStart - margin && s < zone.sEnd + margin)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private static readonly List<RoadSampler> SideRoads = new List<RoadSampler>();
+        private static readonly List<float> JunctionPositions = new List<float>();
+
+        private static void FindJunctions(RoadSampler main)
+        {
+            JunctionPositions.Clear();
             RoadZones zones = main.GetComponent<RoadZones>();
             if (zones == null)
             {
-                return 0f;
+                return;
             }
             foreach (RoadZone zone in zones.Zones)
             {
                 if (zone.type == ZoneType.Junction)
                 {
-                    found = true;
-                    return (zone.sStart + zone.sEnd) * 0.5f;
+                    JunctionPositions.Add((zone.sStart + zone.sEnd) * 0.5f);
                 }
             }
-            return 0f;
         }
 
-        private static void DressRoad(RoadSampler road, RoadSampler otherRoad, Transform root, System.Random rng, Material[] facades,
-            bool isMain, bool hasJunction, float junctionS, float startS)
+        private static bool NearJunction(float s, float margin)
+        {
+            foreach (float junction in JunctionPositions)
+            {
+                if (Mathf.Abs(s - junction) < margin)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private static void DressRoad(RoadSampler road, Transform root, System.Random rng, Material[] facades, bool isMain, float startS)
         {
             RoadSettings settings = road.Settings;
-            string tag = isMain ? "Main" : "Side";
+            string tag = isMain ? "Main" : road.gameObject.name;
             Transform lamps = Group(root, tag + "Lamps");
             Transform trees = Group(root, tag + "Trees");
             Transform buildings = Group(root, tag + "Buildings");
             float length = road.Length;
             float leftOuter = -settings.LeftFootpathOuterT;
             float rightOuter = settings.RightFootpathOuterT;
-            float junctionGap = hasJunction ? 12f + JunctionClearance : 0f;
-            RoadSampler sideRoad = isMain ? otherRoad : null;
+            float junctionGap = 12f + JunctionClearance;
 
             // Street lights: left and right footpath edges, double-arm lights on the median.
             for (float s = Mathf.Max(EndMargin, startS + LampSpacing * 0.5f); s < length - EndMargin; s += LampSpacing)
             {
-                bool nearJunctionLeft = hasJunction && Mathf.Abs(s - junctionS) < junctionGap;
+                bool nearJunctionLeft = isMain && NearJunction(s, junctionGap);
                 if (!nearJunctionLeft)
                 {
                     PlaceLamp(road, lamps, ModelLibrary.Road("light-square"), s, -(leftOuter - LampInset), true);
@@ -158,8 +194,8 @@ namespace BusSim.Editor
             // Trees along both footpaths and the median.
             for (float s = Mathf.Max(EndMargin, startS + TreeSpacing); s < length - EndMargin; s += TreeSpacing * (0.8f + 0.5f * (float)rng.NextDouble()))
             {
-                bool nearJunctionLeft = hasJunction && Mathf.Abs(s - junctionS) < junctionGap;
-                bool inBusStop = isMain && s > BusStopStart && s < BusStopEnd;
+                bool nearJunctionLeft = isMain && NearJunction(s, junctionGap);
+                bool inBusStop = isMain && InZone(road, ZoneType.BusStop, s, BusStopMargin);
                 if (!nearJunctionLeft && !inBusStop)
                 {
                     PlaceTree(road, trees, rng, s, -(leftOuter - TreeInset));
@@ -175,47 +211,76 @@ namespace BusSim.Editor
                 }
             }
 
-            // Houses, shops and flats in rows behind the footpaths, and towers further back.
+            // Houses and shops in unbroken rows behind each footpath, then flats, then towers and a far backdrop.
             string[] houses = ModelNames(ModelLibrary.Suburban, "building-type-");
             string[] shops = ModelNames(ModelLibrary.Commercial, "building-");
             string[] towers = ModelNames(ModelLibrary.Commercial, "building-skyscraper");
+            string[] backdrop = ModelNames(ModelLibrary.Commercial, "low-detail-building-");
             for (int side = 0; side < 2; side++)
             {
                 bool left = side == 0;
                 float outerT = left ? -leftOuter : rightOuter;
                 float sign = left ? -1f : 1f;
-                float s = Mathf.Max(EndMargin, startS) + (float)rng.NextDouble() * 6f;
-                while (s < length - EndMargin)
+                foreach (float setback in BuildingRowSetbacks)
                 {
-                    bool useShop = rng.NextDouble() < 0.45;
-                    string[] pool = useShop && shops.Length > 0 ? shops : houses;
-                    string model = pool.Length > 0 ? pool[rng.Next(pool.Length)] : null;
-                    float scale = useShop && shops.Length > 0 ? ModelLibrary.ShopScale : ModelLibrary.HouseScale;
-                    string folder = useShop && shops.Length > 0 ? ModelLibrary.Commercial : ModelLibrary.Suburban;
-                    if (model == null)
-                    {
-                        break;
-                    }
-
-                    GameObject placed = PlaceBuilding(road, buildings, folder + model + ".fbx", scale, s, outerT + sign * BuildingSetback, left, sideRoad, hasJunction && left, junctionS);
-                    float footprint = placed != null ? Mathf.Max(8f, MeasureAlongRoad(placed)) : 12f;
-                    s += footprint + BuildingGap + (float)rng.NextDouble() * 6f;
+                    FillRow(road, buildings, rng, houses, shops, outerT + sign * setback, left, isMain, startS);
                 }
+                FillBackdrop(road, buildings, rng, backdrop, outerT + sign * BackdropOffset, left, isMain, startS);
+                PlaceFlatsAndTowers(road, buildings, rng, facades, towers, outerT, sign, left, startS, isMain);
+            }
+        }
 
-                PlaceFlatsAndTowers(road, buildings, rng, facades, towers, outerT, sign, left, startS, sideRoad, hasJunction && left, junctionS);
+        /// <summary>One row of buildings along the road with almost no gaps, skipping the side roads.</summary>
+        private static void FillRow(RoadSampler road, Transform parent, System.Random rng, string[] houses, string[] shops,
+            float t, bool left, bool isMain, float startS)
+        {
+            float length = road.Length;
+            float s = Mathf.Max(EndMargin, startS) + (float)rng.NextDouble() * 6f;
+            while (s < length - EndMargin)
+            {
+                bool useShop = rng.NextDouble() < ShopShare;
+                string[] pool = useShop && shops.Length > 0 ? shops : houses;
+                if (pool.Length == 0)
+                {
+                    return;
+                }
+                string model = pool[rng.Next(pool.Length)];
+                float scale = useShop && shops.Length > 0 ? ModelLibrary.ShopScale : ModelLibrary.HouseScale;
+                string folder = useShop && shops.Length > 0 ? ModelLibrary.Commercial : ModelLibrary.Suburban;
+
+                GameObject placed = PlaceBuilding(road, parent, folder + model + ".fbx", scale, s, t, left, isMain && left);
+                float footprint = placed != null ? Mathf.Max(8f, MeasureAlongRoad(placed)) : BlockedStep;
+                s += footprint + BuildingGap + (float)rng.NextDouble() * BuildingGapJitter;
+            }
+        }
+
+        /// <summary>Low, cheap buildings far back, so the horizon is a city and not an empty plain.</summary>
+        private static void FillBackdrop(RoadSampler road, Transform parent, System.Random rng, string[] models, float t, bool left, bool isMain, float startS)
+        {
+            if (models.Length == 0)
+            {
+                return;
+            }
+            float s = Mathf.Max(EndMargin, startS) + (float)rng.NextDouble() * 10f;
+            while (s < road.Length - EndMargin)
+            {
+                string model = models[rng.Next(models.Length)];
+                GameObject placed = PlaceBuilding(road, parent, ModelLibrary.Commercial + model + ".fbx", ModelLibrary.ShopScale * BackdropScale, s, t, left, isMain && left);
+                float footprint = placed != null ? Mathf.Max(10f, MeasureAlongRoad(placed)) : BlockedStep;
+                s += footprint + BuildingGap;
             }
         }
 
         private static void PlaceFlatsAndTowers(RoadSampler road, Transform parent, System.Random rng, Material[] facades, string[] towers,
-            float outerT, float sign, bool left, float startS, RoadSampler sideRoad, bool avoidJunction, float junctionS)
+            float outerT, float sign, bool left, float startS, bool isMain)
         {
             float length = road.Length;
-            for (float s = Mathf.Max(60f, startS + 40f) + (float)rng.NextDouble() * 40f; s < length - 60f; s += HdbSpacing * (0.8f + 0.5f * (float)rng.NextDouble()))
+            for (float s = Mathf.Max(60f, startS + 40f) + (float)rng.NextDouble() * 20f; s < length - 60f; s += HdbSpacing * (0.8f + 0.5f * (float)rng.NextDouble()))
             {
                 float lengthMetres = 50f + (float)rng.NextDouble() * 30f;
                 float floors = rng.Next(12, 22);
                 Vector3 centre = road.GetPoint(s, outerT + sign * (HdbRowOffset + 9f));
-                if (BlockedBySideRoad(centre, sideRoad, 30f) || (avoidJunction && Mathf.Abs(s - junctionS) < 55f))
+                if (BlockedBySideRoad(centre, FlatClearance) || (isMain && left && NearJunction(s, 55f)))
                 {
                     continue;
                 }
@@ -226,16 +291,16 @@ namespace BusSim.Editor
             {
                 return;
             }
-            for (float s = 100f + (float)rng.NextDouble() * 80f; s < length - 80f; s += 220f + (float)rng.NextDouble() * 120f)
+            for (float s = 100f + (float)rng.NextDouble() * 60f; s < length - 80f; s += TowerSpacing + (float)rng.NextDouble() * TowerSpacing * 0.5f)
             {
                 float t = outerT + sign * TowerRowOffset;
                 Vector3 p = road.GetPoint(s, t);
-                if (BlockedBySideRoad(p, sideRoad, 40f) || (avoidJunction && Mathf.Abs(s - junctionS) < 70f))
+                if (BlockedBySideRoad(p, TowerClearance) || (isMain && left && NearJunction(s, 70f)))
                 {
                     continue;
                 }
                 string model = towers[rng.Next(towers.Length)];
-                PlaceBuilding(road, parent, ModelLibrary.Commercial + model + ".fbx", ModelLibrary.ShopScale * 2.2f, s, t, left, sideRoad, false, 0f);
+                PlaceBuilding(road, parent, ModelLibrary.Commercial + model + ".fbx", ModelLibrary.ShopScale * 2.2f, s, t, left, false);
             }
         }
 
@@ -309,11 +374,10 @@ namespace BusSim.Editor
             new Color(0.20f, 0.42f, 0.14f), new Color(0.27f, 0.50f, 0.16f), new Color(0.16f, 0.36f, 0.16f)
         };
 
-        private static GameObject PlaceBuilding(RoadSampler road, Transform parent, string assetPath, float scale, float s, float t, bool left,
-            RoadSampler sideRoad, bool avoidJunction, float junctionS)
+        private static GameObject PlaceBuilding(RoadSampler road, Transform parent, string assetPath, float scale, float s, float t, bool left, bool avoidJunction)
         {
             Vector3 position = road.GetPoint(s, t);
-            if (BlockedBySideRoad(position, sideRoad, SideRoadClearance + 8f) || (avoidJunction && Mathf.Abs(s - junctionS) < 12f + JunctionClearance + 8f))
+            if (BlockedBySideRoad(position, SideRoadClearance + 8f) || (avoidJunction && NearJunction(s, 12f + JunctionClearance + 8f)))
             {
                 return null;
             }
@@ -323,15 +387,30 @@ namespace BusSim.Editor
             return Spawn(parent, assetPath, position, Quaternion.LookRotation(toRoad, Vector3.up), scale);
         }
 
-        private static bool BlockedBySideRoad(Vector3 point, RoadSampler sideRoad, float clearance)
+        /// <summary>True if the point is within the corridor of any side road, plus the clearance.</summary>
+        private static bool BlockedBySideRoad(Vector3 point, float clearance)
         {
-            if (sideRoad == null || sideRoad.Settings == null)
+            foreach (RoadSampler sideRoad in SideRoads)
             {
-                return false;
+                if (sideRoad == null || sideRoad.Settings == null)
+                {
+                    continue;
+                }
+                // Distance from the point to the side road's centreline, measured in XZ. The side road is straight.
+                Vector3 a = sideRoad.GetPoint(0f, 0f);
+                Vector3 b = sideRoad.GetPoint(sideRoad.Length, 0f);
+                Vector2 start = new Vector2(a.x, a.z);
+                Vector2 along = new Vector2(b.x, b.z) - start;
+                Vector2 offset = new Vector2(point.x, point.z) - start;
+                float u = Mathf.Clamp01(Vector2.Dot(offset, along) / Mathf.Max(along.sqrMagnitude, Mathf.Epsilon));
+                float distance = (offset - along * u).magnitude;
+                float corridor = sideRoad.Settings.HalfRoadWidth + sideRoad.Settings.footpathWidth + clearance;
+                if (distance < corridor)
+                {
+                    return true;
+                }
             }
-            (float s, float t) = sideRoad.ProjectToRoad(point);
-            float corridor = sideRoad.Settings.HalfRoadWidth + sideRoad.Settings.footpathWidth + clearance;
-            return Mathf.Abs(t) < corridor && s > -clearance && s < sideRoad.Length + clearance;
+            return false;
         }
 
         private static GameObject Spawn(Transform parent, string assetPath, Vector3 position, Quaternion rotation, float scale)

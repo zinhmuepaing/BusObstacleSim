@@ -23,11 +23,15 @@ namespace BusSim.Traffic
         public const int TurnSamples = 24;
         private const float FarGap = 10000f;
         private const float StoppedSpeed = 0.3f;
+        private const float MinHeadingSpeed = 1f;
+        private const float OvertakeSpeedShare = 0.85f;
 
         [SerializeField, Min(1f)] private float length = 4f;
         [SerializeField, Min(0.5f)] private float width = 1.8f;
         [Tooltip("Impacts slower than this (m/s relative) do not count as a hit.")]
         [SerializeField, Min(0f)] private float hitMinSpeed = 0.5f;
+        [Tooltip("A car that falls this far (metres) behind its scripted position is blocked and stops being driven.")]
+        [SerializeField, Min(0.5f)] private float maxPoseLag = 3f;
 
         private Rigidbody body;
         private PooledPhysicsReset resetter;
@@ -36,6 +40,9 @@ namespace BusSim.Traffic
         private float desiredSpeed;
         private float turnDistance;
         private int vehicleLayer;
+        private float laneChangeRate;
+        private float laneChangeTimer;
+        private float lateralSpeed;
 
         public Vector3[] TurnPoints { get; } = new Vector3[TurnSamples + 1];
         public float[] TurnCumulative { get; } = new float[TurnSamples + 1];
@@ -43,6 +50,11 @@ namespace BusSim.Traffic
 
         public RoadSampler Sampler { get; private set; }
         public float LaneT { get; private set; }
+
+        /// <summary>The lane centre this car is heading for. Differs from LaneT during a lane change.</summary>
+        public float TargetLaneT { get; private set; }
+        public bool Aggressive { get; private set; }
+        public int JunctionIndex { get; private set; }
         public int Direction { get; private set; }
         public float S { get; private set; }
         public float Speed { get; private set; }
@@ -73,12 +85,19 @@ namespace BusSim.Traffic
         }
 
         public void Init(TrafficManager owner, TrafficSettings trafficSettings, RoadSampler sampler, float laneT, int direction,
-            float s, float speed, float cruiseSpeed, Phase phase, float acceptedGap, string id, int planIndex)
+            float s, float speed, float cruiseSpeed, Phase phase, float acceptedGap, string id, int planIndex,
+            bool aggressive = false, int junctionIndex = 0)
         {
             manager = owner;
             settings = trafficSettings;
             Sampler = sampler;
             LaneT = laneT;
+            TargetLaneT = laneT;
+            laneChangeRate = 0f;
+            lateralSpeed = 0f;
+            laneChangeTimer = settings.laneChangeCooldown * 0.5f;
+            Aggressive = aggressive;
+            JunctionIndex = junctionIndex;
             Direction = direction;
             S = s;
             Speed = speed;
@@ -137,11 +156,48 @@ namespace BusSim.Traffic
                 }
             }
 
+            if (CurrentPhase == Phase.Cruising)
+            {
+                UpdateLaneChange(gap, leadSpeed, deltaTime);
+            }
+
             float acceleration = IdmAcceleration(Speed, desiredSpeed, gap, leadSpeed);
             Speed = Mathf.Max(0f, Speed + acceleration * deltaTime);
             S += Direction * Speed * deltaTime;
             MainRoadS = S;
             PlaceOnLane(false, deltaTime);
+        }
+
+        /// <summary>
+        /// Aggressive drivers who are stuck behind something slower pull into the other lane of their carriageway
+        /// as soon as it is clear. Everyone finishes a lane change that has started.
+        /// </summary>
+        private void UpdateLaneChange(float gap, float leadSpeed, float deltaTime)
+        {
+            laneChangeTimer += deltaTime;
+            bool changing = !Mathf.Approximately(LaneT, TargetLaneT);
+            if (!changing && Aggressive && laneChangeTimer >= settings.laneChangeCooldown
+                && gap < settings.overtakeGap && leadSpeed < desiredSpeed * OvertakeSpeedShare)
+            {
+                if (manager.TryPickLane(this, out float newLaneT))
+                {
+                    TargetLaneT = newLaneT;
+                    laneChangeRate = Mathf.Abs(newLaneT - LaneT) / settings.laneChangeSeconds;
+                    laneChangeTimer = 0f;
+                    changing = true;
+                }
+            }
+
+            if (changing)
+            {
+                float before = LaneT;
+                LaneT = Mathf.MoveTowards(LaneT, TargetLaneT, laneChangeRate * deltaTime);
+                lateralSpeed = deltaTime > 0f ? (LaneT - before) / deltaTime : 0f;
+            }
+            else
+            {
+                lateralSpeed = 0f;
+            }
         }
 
         private float DistanceToStopLine()
@@ -166,15 +222,18 @@ namespace BusSim.Traffic
             turnDistance += Speed * deltaTime;
 
             float fraction = TurnLength > 0f ? Mathf.Clamp01(turnDistance / TurnLength) : 1f;
-            MainRoadS = manager.JunctionS + fraction * (manager.TurnEndS - manager.JunctionS);
+            float junctionS = manager.JunctionS(JunctionIndex);
+            float turnEndS = manager.TurnEndS(JunctionIndex);
+            MainRoadS = junctionS + fraction * (turnEndS - junctionS);
 
             if (turnDistance >= TurnLength)
             {
                 // Joined the main road: carry on as ordinary traffic in the left lane.
                 Sampler = manager.MainRoad;
                 LaneT = Sampler.Settings.GetLaneCentreT(0);
+                TargetLaneT = LaneT;
                 Direction = 1;
-                S = manager.TurnEndS;
+                S = turnEndS;
                 MainRoadS = S;
                 desiredSpeed = manager.SameDirectionCruiseSpeed;
                 CurrentPhase = Phase.Cruising;
@@ -205,7 +264,9 @@ namespace BusSim.Traffic
         {
             Sampler.GetFrame(S, out Vector3 centre, out Vector3 forward, out Vector3 right);
             Vector3 position = centre + right * LaneT;
-            Quaternion rotation = Quaternion.LookRotation(forward * Direction, Vector3.up);
+            // Point the nose along the real path, so a car changing lane is angled into it.
+            Vector3 heading = forward * (Direction * Mathf.Max(Speed, MinHeadingSpeed)) + right * lateralSpeed;
+            Quaternion rotation = Quaternion.LookRotation(heading, Vector3.up);
             Apply(position, rotation, teleport, deltaTime);
         }
 
@@ -223,7 +284,16 @@ namespace BusSim.Traffic
             }
 
             body.useGravity = false;
-            body.linearVelocity = (position - body.position) / Mathf.Max(deltaTime, Mathf.Epsilon);
+            Vector3 lag = position - body.position;
+            if (lag.sqrMagnitude > maxPoseLag * maxPoseLag)
+            {
+                // Blocked by something solid: stop being driven instead of demanding ever larger velocities.
+                body.linearVelocity = Vector3.zero;
+                body.angularVelocity = Vector3.zero;
+                Speed = 0f;
+                return;
+            }
+            body.linearVelocity = lag / Mathf.Max(deltaTime, Mathf.Epsilon);
             body.angularVelocity = Vector3.zero;
             body.MoveRotation(rotation);
         }
@@ -231,16 +301,19 @@ namespace BusSim.Traffic
         /// <summary>Intelligent Driver Model acceleration for a car with the given speed, wanted speed and lead.</summary>
         private float IdmAcceleration(float speed, float wantedSpeed, float gap, float leadSpeed)
         {
+            float maxAcceleration = Aggressive ? settings.aggressiveAcceleration : settings.maxAcceleration;
+            float headway = Aggressive ? settings.aggressiveTimeHeadway : settings.timeHeadway;
+            float minGap = Aggressive ? settings.aggressiveMinGap : settings.minGap;
             float free = 1f - Mathf.Pow(speed / Mathf.Max(wantedSpeed, 0.1f), 4f);
             float interaction = 0f;
             if (gap < FarGap)
             {
                 float closing = speed - leadSpeed;
-                float brakingTerm = speed * closing / (2f * Mathf.Sqrt(settings.maxAcceleration * settings.comfortableBraking));
-                float desiredGap = settings.minGap + Mathf.Max(0f, speed * settings.timeHeadway + brakingTerm);
+                float brakingTerm = speed * closing / (2f * Mathf.Sqrt(maxAcceleration * settings.comfortableBraking));
+                float desiredGap = minGap + Mathf.Max(0f, speed * headway + brakingTerm);
                 interaction = Mathf.Pow(desiredGap / Mathf.Max(gap, 0.1f), 2f);
             }
-            return Mathf.Max(settings.maxAcceleration * (free - interaction), -settings.emergencyBraking);
+            return Mathf.Max(maxAcceleration * (free - interaction), -settings.emergencyBraking);
         }
 
         private void OnCollisionEnter(Collision collision)

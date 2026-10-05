@@ -9,16 +9,17 @@ using Unity.Mathematics;
 namespace BusSim.Editor
 {
     /// <summary>
-    /// Adds a T-junction on the left of the main road: a side road leaving at right angles, curved kerb
+    /// Adds T-junctions on the left of the main road: a side road leaving at right angles, curved kerb
     /// returns, a give-way line, and a Junction zone that obstacles are kept out of.
     /// </summary>
     public static class JunctionBuilder
     {
-        private const string SideRoadName = "SideRoad";
+        public const string SideRoadPrefix = "SideRoad";
         private const string SettingsPath = "Assets/_Project/Data/SideRoadSettings.asset";
         private const string MarkingsName = "JunctionMarkings";
 
-        private const float JunctionS = 520f;
+        // Where each side road leaves the main road (metres along it). Kept clear of the bus stops and school zones.
+        private static readonly float[] JunctionPositions = { 520f, 1250f };
         private const float SideRoadLength = 160f;
         // Whole metres, so the kerb gap lines up with the road mesh sections (meshStep is 1 m).
         private const float GapHalfLength = 12f;
@@ -26,8 +27,14 @@ namespace BusSim.Editor
         private const float GiveWayDepth = 0.4f;
         private const float GiveWayInset = 0.2f;
 
-        [MenuItem("BusSim/Road/Create T-Junction")]
-        public static void CreateJunction()
+        /// <summary>True for the side roads, false for the main road.</summary>
+        public static bool IsSideRoad(GameObject road)
+        {
+            return road.name.StartsWith(SideRoadPrefix);
+        }
+
+        [MenuItem("BusSim/Road/Create T-Junctions")]
+        public static void CreateJunctions()
         {
             RoadSampler main = FindMainRoad();
             if (main == null || main.Settings == null)
@@ -40,10 +47,12 @@ namespace BusSim.Editor
             RoadSettings mainSettings = main.Settings;
             RoadMaterialFactory.Set materials = RoadMaterialFactory.LoadOrCreate();
 
-            GameObject existing = GameObject.Find(SideRoadName);
-            if (existing != null)
+            foreach (RoadSampler existing in Object.FindObjectsByType<RoadSampler>())
             {
-                Undo.DestroyObjectImmediate(existing);
+                if (IsSideRoad(existing.gameObject))
+                {
+                    Undo.DestroyObjectImmediate(existing.gameObject);
+                }
             }
 
             // Side road settings: a copy of the main road's, narrowed to two lanes with no oncoming carriageway.
@@ -53,42 +62,56 @@ namespace BusSim.Editor
             sideSettings.roadLength = SideRoadLength;
             EditorUtility.SetDirty(sideSettings);
 
+            List<JunctionSpec> specs = new List<JunctionSpec>();
+            List<RoadSampler> sides = new List<RoadSampler>();
             float halfWidth = mainSettings.HalfRoadWidth;
-            main.GetFrame(JunctionS, out _, out Vector3 forward, out Vector3 right);
-            Vector3 origin = main.GetPoint(JunctionS, -halfWidth);
-            Vector3 outward = -right;
+            for (int i = 0; i < JunctionPositions.Length; i++)
+            {
+                float junctionS = JunctionPositions[i];
+                if (junctionS + GapHalfLength + SideRoadLength * 0.1f > main.Length)
+                {
+                    continue;
+                }
 
-            GameObject side = new GameObject(SideRoadName);
-            Undo.RegisterCreatedObjectUndo(side, "Create T-Junction");
-            RoadSampler sideSampler = side.AddComponent<RoadSampler>();
-            RoadMeshBuilder sideBuilder = side.AddComponent<RoadMeshBuilder>();
-            SplineContainer container = side.GetComponent<SplineContainer>();
-            Spline spline = container.Splines[0];
-            spline.Clear();
-            spline.Add(new BezierKnot((float3)origin), TangentMode.Linear);
-            spline.Add(new BezierKnot((float3)(origin + outward * SideRoadLength)), TangentMode.Linear);
+                main.GetFrame(junctionS, out _, out _, out Vector3 right);
+                Vector3 origin = main.GetPoint(junctionS, -halfWidth);
+                Vector3 outward = -right;
 
-            sideSampler.Settings = sideSettings;
-            sideBuilder.SetMaterials(materials.Asphalt, materials.Marking, materials.Footpath, materials.Ground);
+                GameObject side = new GameObject(i == 0 ? SideRoadPrefix : SideRoadPrefix + (i + 1));
+                Undo.RegisterCreatedObjectUndo(side, "Create T-Junction");
+                RoadSampler sideSampler = side.AddComponent<RoadSampler>();
+                RoadMeshBuilder sideBuilder = side.AddComponent<RoadMeshBuilder>();
+                SplineContainer container = side.GetComponent<SplineContainer>();
+                Spline spline = container.Splines[0];
+                spline.Clear();
+                spline.Add(new BezierKnot((float3)origin), TangentMode.Linear);
+                spline.Add(new BezierKnot((float3)(origin + outward * SideRoadLength)), TangentMode.Linear);
 
-            JunctionSpec spec = new JunctionSpec(JunctionS, sideSettings.HalfRoadWidth, GapHalfLength);
-            sideBuilder.Configure(false, true, spec.Radius, null);
-            mainBuilder.Configure(true, true, 0f, new[] { spec });
+                sideSampler.Settings = sideSettings;
+                sideBuilder.SetMaterials(materials.Asphalt, materials.Marking, materials.Footpath, materials.Ground, materials.Grass);
+
+                JunctionSpec spec = new JunctionSpec(junctionS, sideSettings.HalfRoadWidth, GapHalfLength);
+                sideBuilder.Configure(false, true, spec.Radius, null);
+                sideBuilder.Rebuild();
+                AddGiveWayLine(side.transform, sideSampler, sideSettings, materials.Marking);
+
+                specs.Add(spec);
+                sides.Add(sideSampler);
+            }
+
+            mainBuilder.Configure(true, true, 0f, specs);
             mainBuilder.Rebuild();
-            sideBuilder.Rebuild();
+            AddZones(main, specs);
 
-            AddGiveWayLine(side.transform, sideSampler, sideSettings, materials.Marking);
-            AddZone(main, spec);
-
-            EditorSceneManager.MarkSceneDirty(side.scene);
-            Debug.Log($"BusSim: T-junction at s = {JunctionS} m, side road {SideRoadLength} m long, kerb gap {GapHalfLength * 2f} m, return radius {spec.Radius:F1} m.");
+            EditorSceneManager.MarkSceneDirty(main.gameObject.scene);
+            Debug.Log($"BusSim: {specs.Count} T-junctions, side roads {SideRoadLength} m long, kerb gap {GapHalfLength * 2f} m.");
         }
 
         private static RoadSampler FindMainRoad()
         {
             foreach (RoadSampler sampler in Object.FindObjectsByType<RoadSampler>())
             {
-                if (sampler.gameObject.name != SideRoadName)
+                if (!IsSideRoad(sampler.gameObject))
                 {
                     return sampler;
                 }
@@ -114,7 +137,7 @@ namespace BusSim.Editor
             ZoneBuilder.Ribbon(side, markings, "GiveWayLine", marking, GiveWayStart, GiveWayStart + GiveWayDepth, laneWidth * 0.5f, width, settings.markingLift);
         }
 
-        private static void AddZone(RoadSampler main, JunctionSpec spec)
+        private static void AddZones(RoadSampler main, List<JunctionSpec> specs)
         {
             RoadZones zones = main.GetComponent<RoadZones>();
             if (zones == null)
@@ -130,7 +153,10 @@ namespace BusSim.Editor
                     list.Add(zone);
                 }
             }
-            list.Add(new RoadZone(ZoneType.Junction, spec.s - spec.gapHalfLength, spec.s + spec.gapHalfLength));
+            foreach (JunctionSpec spec in specs)
+            {
+                list.Add(new RoadZone(ZoneType.Junction, spec.s - spec.gapHalfLength, spec.s + spec.gapHalfLength));
+            }
             zones.SetZones(list);
             EditorUtility.SetDirty(zones);
         }

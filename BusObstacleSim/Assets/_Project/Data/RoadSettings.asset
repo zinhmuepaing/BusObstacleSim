@@ -14,10 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: BusSim.Runtime::BusSim.Road.RoadSettings
   laneCount: 2
   laneWidth: 3.5
-  roadLength: 1000
+  roadLength: 3000
   surfaceY: 0
+  oncomingLaneCount: 2
+  medianWidth: 3
+  medianCapWidth: 0.3
+  medianGrassSink: 0.03
   footpathWidth: 2
   kerbHeight: 0.15
+  edgeGuardHeight: 1.5
   markingWidth: 0.15
   dashLength: 3
   dashGap: 6
@@ -28,3 +33,4 @@ MonoBehaviour:
   groundDrop: 0.05
   groundPadding: 200
   groundMetresPerTile: 8
+  groundColliderThickness: 1

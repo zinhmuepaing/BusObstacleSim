@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45b47e6337f9e704b988c6990267e031, type: 3}
   m_Name: TrafficSettings
   m_EditorClassIdentifier: BusSim.Runtime::BusSim.Traffic.TrafficSettings
-  sameDirectionPerKm: 5
-  oncomingPerKm: 9
-  sideRoadEntries: 3
+  sameDirectionPerKm: 9
+  oncomingPerKm: 14
+  sideRoadEntries: 5
   minSpacing: 30
   sameDirectionMinKmh: 25
   sameDirectionMaxKmh: 45
@@ -40,6 +40,19 @@ MonoBehaviour:
   stopLineS: 2.9
   turnEndPast: 18
   goWithin: 12
+  aggressiveShare: 0.3
+  aggressiveMinKmh: 60
+  aggressiveMaxKmh: 85
+  aggressiveTimeHeadway: 0.6
+  aggressiveMinGap: 1.2
+  aggressiveAcceleration: 3.5
+  chasers: 5
+  chaserDistance: 45
+  overtakeGap: 28
+  laneChangeCooldown: 4
+  laneChangeSeconds: 1.4
+  laneChangeClearance: 8
+  laneChangeGapSeconds: 1.5
   vehiclePrefabs:
   - {fileID: 2537695094562394714, guid: 5fa34388263cafd48bb7fc3c84d6250f, type: 3}
   - {fileID: 7734354401563459939, guid: ffcbe225e23975647b092c25a0c34227, type: 3}

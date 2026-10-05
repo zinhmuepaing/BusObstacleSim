@@ -38,6 +38,7 @@ namespace BusSim.Vehicle
 
         private Rigidbody body;
         private InputAction driveAction;
+        private InputAction brakeAction;
         private float steerAngle;
         private float flippedSeconds;
         private float wheelbase;
@@ -160,21 +161,25 @@ namespace BusSim.Vehicle
                 .With("Down", "<Keyboard>/downArrow")
                 .With("Left", "<Keyboard>/leftArrow")
                 .With("Right", "<Keyboard>/rightArrow");
+            brakeAction = new InputAction("Brake", InputActionType.Button, "<Keyboard>/space");
         }
 
         private void OnEnable()
         {
             driveAction?.Enable();
+            brakeAction?.Enable();
         }
 
         private void OnDisable()
         {
             driveAction?.Disable();
+            brakeAction?.Disable();
         }
 
         private void OnDestroy()
         {
             driveAction?.Dispose();
+            brakeAction?.Dispose();
         }
 
         private void FixedUpdate()
@@ -198,14 +203,15 @@ namespace BusSim.Vehicle
             Vector2 input = useInputOverride ? inputOverride : (driveAction != null ? driveAction.ReadValue<Vector2>() : Vector2.zero);
             float forwardSpeed = Vector3.Dot(body.linearVelocity, transform.forward);
             SpeedMetresPerSecond = forwardSpeed;
+            bool spaceBrake = !useInputOverride && brakeAction != null && brakeAction.IsPressed();
 
-            ApplyDrive(input.y, forwardSpeed);
+            ApplyDrive(input.y, forwardSpeed, spaceBrake);
             ApplySteering(input.x, forwardSpeed, deltaTime);
             ApplyStability(forwardSpeed);
             CheckFlip(deltaTime);
         }
 
-        private void ApplyDrive(float throttle, float forwardSpeed)
+        private void ApplyDrive(float throttle, float forwardSpeed, bool spaceBrake)
         {
             float motor = 0f;
             float brake = 0f;
@@ -214,7 +220,12 @@ namespace BusSim.Vehicle
                 awaitingBrakeRelease = false;
             }
 
-            if (throttle > 0f)
+            if (spaceBrake)
+            {
+                // The brake pedal: full braking whatever the throttle says, and the car holds still once stopped.
+                brake = Mathf.Abs(forwardSpeed) < settings.stoppedSpeed ? settings.parkBrakeTorque : settings.brakeTorque;
+            }
+            else if (throttle > 0f)
             {
                 if (forwardSpeed < -settings.reverseSwitchSpeed)
                 {

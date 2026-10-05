@@ -994,6 +994,7 @@ MonoBehaviour:
   settleSeconds: 8
   settleSpeed: 0.1
   lostDistance: 30
+  maxPoseLag: 3
   startBehindFront: 2
   speedAboveVehicle: 3
   mergeGap: 12

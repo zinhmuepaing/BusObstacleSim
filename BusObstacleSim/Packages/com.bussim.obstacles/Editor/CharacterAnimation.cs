@@ -13,6 +13,7 @@ namespace BusSim.Editor
         public const string AnimationFolder = "Assets/_Project/Animation";
         private const string PersonControllerPath = AnimationFolder + "/Person.controller";
         private const string RiderControllerPath = AnimationFolder + "/Rider.controller";
+        private const string SeatedControllerPath = AnimationFolder + "/Seated.controller";
         private const string SourceCharacter = "character-male-a";
 
         // Walk and sprint speeds (m/s) at which each clip plays at its natural pace.
@@ -30,6 +31,36 @@ namespace BusSim.Editor
         public static RuntimeAnimatorController RiderController()
         {
             return LoadOrBuild(RiderControllerPath, BuildRiderController);
+        }
+
+        /// <summary>Seated character (wheelchair user): holds the sit pose, falls on a hit.</summary>
+        public static RuntimeAnimatorController SeatedController()
+        {
+            return LoadOrBuild(SeatedControllerPath, BuildSeatedController);
+        }
+
+        private static AnimatorController BuildSeatedController(string path)
+        {
+            AnimatorController controller = AnimatorController.CreateAnimatorControllerAtPath(path);
+            controller.AddParameter("Speed", AnimatorControllerParameterType.Float);
+            controller.AddParameter("Fall", AnimatorControllerParameterType.Trigger);
+            AnimatorStateMachine machine = controller.layers[0].stateMachine;
+
+            AnimatorState move = machine.AddState("Move");
+            move.motion = Clip("sit");
+            machine.defaultState = move;
+
+            AnimatorState fall = machine.AddState("Fall");
+            fall.motion = Clip("fall");
+            AnimatorStateTransition toFall = machine.AddAnyStateTransition(fall);
+            toFall.AddCondition(AnimatorConditionMode.If, 0f, "Fall");
+            toFall.hasExitTime = false;
+            toFall.duration = FallTransitionSeconds;
+            toFall.canTransitionToSelf = false;
+
+            EditorUtility.SetDirty(controller);
+            AssetDatabase.SaveAssets();
+            return controller;
         }
 
         private static RuntimeAnimatorController LoadOrBuild(string path, System.Func<string, AnimatorController> build)

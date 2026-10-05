@@ -76,3 +76,171 @@ BusObstacleSim/ProjectSettings/ProjectSettings.asset
 CLAUDE.md
 ---
 
+## Session End: 20261005_160400
+### Commits
+69b3517 Add scenery builder; fix blocked scripted movers; traffic review fixes; log KI-8..KI-11
+a15b371 M8: physical car (WheelCollider), solid obstacles with hit reactions, autopilot overtaking
+ce349aa M3-M7: obstacle planner, 14-type catalog, difficulty, zones, UPM package
+2ccd3b2 M2 fixes: chase camera target, snappier bus handling, road shape, edge guard
+c265831 M1: spline road with markings, kerbs, footpaths, sky, RoadSampler and tests
+### Uncommitted Changes
+BusObstacleSim/Assets/Scenes/SampleScene.unity
+BusObstacleSim/Assets/_Project/Data/Difficulty/Easy.asset
+BusObstacleSim/Assets/_Project/Data/Difficulty/Hard.asset
+BusObstacleSim/Assets/_Project/Data/Difficulty/Normal.asset
+BusObstacleSim/Assets/_Project/Data/RoadSettings.asset
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/BUSSTOP_BLOCK.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/BUSSTOP_RUSH.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/CAR_CUTIN.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/CONE_CLUSTER.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/CYCLIST_EDGE.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/DEBRIS_BRANCH.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/DEBRIS_CARGO.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/DOUBLE_PARKED_VAN.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/MOTORCYCLE_FILTER.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/PED_CHILD_RUN.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/PED_ELDERLY.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/PED_JAYWALK_ADULT.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/ROADWORK_BARRIER.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/STALLED_CAR.prefab
+BusObstacleSim/Assets/_Project/Tests/EditMode/CatalogTests.cs
+BusObstacleSim/Packages/com.bussim.obstacles/Editor/CharacterAnimation.cs
+BusObstacleSim/Packages/com.bussim.obstacles/Editor/ObstacleContentBuilder.cs
+BusObstacleSim/Packages/com.bussim.obstacles/Editor/RoadSceneBuilder.cs
+BusObstacleSim/Packages/com.bussim.obstacles/Editor/SceneryBuilder.cs
+BusObstacleSim/Packages/com.bussim.obstacles/Editor/ZoneBuilder.cs
+BusObstacleSim/Packages/com.bussim.obstacles/Runtime/Obstacles/AnimatorWalkRig.cs
+---
+
+## Session End: 20261005_160849
+### Commits
+69b3517 Add scenery builder; fix blocked scripted movers; traffic review fixes; log KI-8..KI-11
+a15b371 M8: physical car (WheelCollider), solid obstacles with hit reactions, autopilot overtaking
+ce349aa M3-M7: obstacle planner, 14-type catalog, difficulty, zones, UPM package
+2ccd3b2 M2 fixes: chase camera target, snappier bus handling, road shape, edge guard
+c265831 M1: spline road with markings, kerbs, footpaths, sky, RoadSampler and tests
+### Uncommitted Changes
+BusObstacleSim/Assets/Scenes/SampleScene.unity
+BusObstacleSim/Assets/_Project/Data/Difficulty/Easy.asset
+BusObstacleSim/Assets/_Project/Data/Difficulty/Hard.asset
+BusObstacleSim/Assets/_Project/Data/Difficulty/Normal.asset
+BusObstacleSim/Assets/_Project/Data/RoadSettings.asset
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/BUSSTOP_BLOCK.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/BUSSTOP_RUSH.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/CAR_CUTIN.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/CONE_CLUSTER.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/CYCLIST_EDGE.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/DEBRIS_BRANCH.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/DEBRIS_CARGO.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/DOUBLE_PARKED_VAN.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/MOTORCYCLE_FILTER.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/PED_CHILD_RUN.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/PED_ELDERLY.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/PED_JAYWALK_ADULT.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/ROADWORK_BARRIER.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/STALLED_CAR.prefab
+BusObstacleSim/Assets/_Project/Tests/EditMode/CatalogTests.cs
+BusObstacleSim/Packages/com.bussim.obstacles/Editor/CharacterAnimation.cs
+BusObstacleSim/Packages/com.bussim.obstacles/Editor/ObstacleContentBuilder.cs
+BusObstacleSim/Packages/com.bussim.obstacles/Editor/RoadSceneBuilder.cs
+BusObstacleSim/Packages/com.bussim.obstacles/Editor/SceneryBuilder.cs
+BusObstacleSim/Packages/com.bussim.obstacles/Editor/ZoneBuilder.cs
+BusObstacleSim/Packages/com.bussim.obstacles/Runtime/Obstacles/AnimatorWalkRig.cs
+production/session-logs/.session-end.hash
+production/session-logs/session-cost.md
+production/session-logs/session-log.md
+---
+
+## Session End: 20261005_161030
+### Commits
+69b3517 Add scenery builder; fix blocked scripted movers; traffic review fixes; log KI-8..KI-11
+a15b371 M8: physical car (WheelCollider), solid obstacles with hit reactions, autopilot overtaking
+ce349aa M3-M7: obstacle planner, 14-type catalog, difficulty, zones, UPM package
+2ccd3b2 M2 fixes: chase camera target, snappier bus handling, road shape, edge guard
+c265831 M1: spline road with markings, kerbs, footpaths, sky, RoadSampler and tests
+### Uncommitted Changes
+BusObstacleSim/Assets/Scenes/SampleScene.unity
+BusObstacleSim/Assets/_Project/Data/Difficulty/Easy.asset
+BusObstacleSim/Assets/_Project/Data/Difficulty/Hard.asset
+BusObstacleSim/Assets/_Project/Data/Difficulty/Normal.asset
+BusObstacleSim/Assets/_Project/Data/RoadSettings.asset
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/BUSSTOP_BLOCK.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/BUSSTOP_RUSH.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/CAR_CUTIN.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/CONE_CLUSTER.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/CYCLIST_EDGE.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/DEBRIS_BRANCH.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/DEBRIS_CARGO.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/DOUBLE_PARKED_VAN.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/MOTORCYCLE_FILTER.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/PED_CHILD_RUN.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/PED_ELDERLY.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/PED_JAYWALK_ADULT.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/ROADWORK_BARRIER.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/STALLED_CAR.prefab
+BusObstacleSim/Assets/_Project/Tests/EditMode/CatalogTests.cs
+BusObstacleSim/Packages/com.bussim.obstacles/Editor/CharacterAnimation.cs
+BusObstacleSim/Packages/com.bussim.obstacles/Editor/ObstacleContentBuilder.cs
+BusObstacleSim/Packages/com.bussim.obstacles/Editor/RoadSceneBuilder.cs
+BusObstacleSim/Packages/com.bussim.obstacles/Editor/SceneryBuilder.cs
+BusObstacleSim/Packages/com.bussim.obstacles/Editor/ZoneBuilder.cs
+BusObstacleSim/Packages/com.bussim.obstacles/Runtime/Obstacles/AnimatorWalkRig.cs
+docs/KNOWN_ISSUES.md
+production/session-logs/.session-end.hash
+production/session-logs/session-cost.md
+production/session-logs/session-log.md
+---
+
+## Session End: 20261005_162826
+### Commits
+69b3517 Add scenery builder; fix blocked scripted movers; traffic review fixes; log KI-8..KI-11
+a15b371 M8: physical car (WheelCollider), solid obstacles with hit reactions, autopilot overtaking
+ce349aa M3-M7: obstacle planner, 14-type catalog, difficulty, zones, UPM package
+2ccd3b2 M2 fixes: chase camera target, snappier bus handling, road shape, edge guard
+c265831 M1: spline road with markings, kerbs, footpaths, sky, RoadSampler and tests
+### Uncommitted Changes
+BusObstacleSim/Assets/Scenes/SampleScene.unity
+BusObstacleSim/Assets/_Project/Data/Difficulty/Easy.asset
+BusObstacleSim/Assets/_Project/Data/Difficulty/Hard.asset
+BusObstacleSim/Assets/_Project/Data/Difficulty/Normal.asset
+BusObstacleSim/Assets/_Project/Data/RoadSettings.asset
+BusObstacleSim/Assets/_Project/Data/TrafficSettings.asset
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/BUSSTOP_BLOCK.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/BUSSTOP_RUSH.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/CAR_CUTIN.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/CONE_CLUSTER.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/CYCLIST_EDGE.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/DEBRIS_BRANCH.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/DEBRIS_CARGO.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/DOUBLE_PARKED_VAN.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/MOTORCYCLE_FILTER.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/PED_CHILD_RUN.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/PED_ELDERLY.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/PED_JAYWALK_ADULT.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/ROADWORK_BARRIER.prefab
+BusObstacleSim/Assets/_Project/Prefabs/Obstacles/STALLED_CAR.prefab
+BusObstacleSim/Assets/_Project/Tests/EditMode/CatalogTests.cs
+BusObstacleSim/Assets/_Project/Tests/EditMode/TrafficPlannerTests.cs
+BusObstacleSim/Packages/com.bussim.obstacles/Editor/CharacterAnimation.cs
+BusObstacleSim/Packages/com.bussim.obstacles/Editor/JunctionBuilder.cs
+BusObstacleSim/Packages/com.bussim.obstacles/Editor/ObstacleContentBuilder.cs
+BusObstacleSim/Packages/com.bussim.obstacles/Editor/RoadMaterialFactory.cs
+BusObstacleSim/Packages/com.bussim.obstacles/Editor/RoadSceneBuilder.cs
+BusObstacleSim/Packages/com.bussim.obstacles/Editor/SceneryBuilder.cs
+BusObstacleSim/Packages/com.bussim.obstacles/Editor/SimulationHarness.cs
+BusObstacleSim/Packages/com.bussim.obstacles/Editor/TrafficContentBuilder.cs
+BusObstacleSim/Packages/com.bussim.obstacles/Editor/ZoneBuilder.cs
+BusObstacleSim/Packages/com.bussim.obstacles/Runtime/Obstacles/AnimatorWalkRig.cs
+BusObstacleSim/Packages/com.bussim.obstacles/Runtime/Road/RoadMeshBuilder.cs
+BusObstacleSim/Packages/com.bussim.obstacles/Runtime/Traffic/TrafficManager.cs
+BusObstacleSim/Packages/com.bussim.obstacles/Runtime/Traffic/TrafficPlanner.cs
+BusObstacleSim/Packages/com.bussim.obstacles/Runtime/Traffic/TrafficSettings.cs
+BusObstacleSim/Packages/com.bussim.obstacles/Runtime/Traffic/TrafficSpawn.cs
+BusObstacleSim/Packages/com.bussim.obstacles/Runtime/Traffic/TrafficVehicle.cs
+BusObstacleSim/Packages/com.bussim.obstacles/Runtime/Vehicle/CarController.cs
+docs/KNOWN_ISSUES.md
+production/session-logs/.session-end.hash
+production/session-logs/session-cost.md
+production/session-logs/session-log.md
+---
+

@@ -13,7 +13,7 @@ namespace BusSim.Tests
     {
         private const string ObstacleFolder = "Assets/_Project/Data/Obstacles";
         private const string DifficultyFolder = "Assets/_Project/Data/Difficulty";
-        private const int ExpectedTypes = 14;
+        private const int ExpectedTypes = 27;
         private const int DensitySeeds = 20;
         private const float DensityTolerance = 0.2f;
 

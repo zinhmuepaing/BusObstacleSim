@@ -14,11 +14,14 @@ namespace BusSim.Editor
     public static class ZoneBuilder
     {
         private const string ZonesObjectName = "Zones";
-        private const float BusStopStart = 380f;
-        private const float BusStopEnd = 440f;
-        private const float SchoolStart = 600f;
-        private const float SchoolEnd = 800f;
+        private const float BusStopLength = 60f;
+        private const float SchoolLength = 200f;
         private const float PatchLength = 12f;
+
+        // Zone start positions along the road (metres). Stops and school zones repeat on a longer map; anything
+        // past the end of the road is dropped.
+        private static readonly float[] BusStopStarts = { 380f, 1480f, 2420f };
+        private static readonly float[] SchoolStarts = { 600f, 1800f };
         private const float MarkingWidth = 0.15f;
         private const float BayWidth = 2.6f;
         private const float PatchLift = 0.012f;
@@ -27,7 +30,14 @@ namespace BusSim.Editor
         [MenuItem("BusSim/Road/Create Default Zones")]
         public static void CreateZones()
         {
-            RoadSampler road = Object.FindAnyObjectByType<RoadSampler>();
+            RoadSampler road = null;
+            foreach (RoadSampler sampler in Object.FindObjectsByType<RoadSampler>())
+            {
+                if (!JunctionBuilder.IsSideRoad(sampler.gameObject))
+                {
+                    road = sampler;
+                }
+            }
             if (road == null || road.Settings == null)
             {
                 Debug.LogError("BusSim: create the road first.");
@@ -39,11 +49,21 @@ namespace BusSim.Editor
             {
                 zones = Undo.AddComponent<RoadZones>(road.gameObject);
             }
-            List<RoadZone> zoneList = new List<RoadZone>
+            List<RoadZone> zoneList = new List<RoadZone>();
+            foreach (float start in BusStopStarts)
             {
-                new RoadZone(ZoneType.BusStop, BusStopStart, BusStopEnd),
-                new RoadZone(ZoneType.School, SchoolStart, SchoolEnd)
-            };
+                if (start + BusStopLength < road.Length)
+                {
+                    zoneList.Add(new RoadZone(ZoneType.BusStop, start, start + BusStopLength));
+                }
+            }
+            foreach (float start in SchoolStarts)
+            {
+                if (start + SchoolLength < road.Length)
+                {
+                    zoneList.Add(new RoadZone(ZoneType.School, start, start + SchoolLength));
+                }
+            }
             foreach (RoadZone existing in zones.Zones)
             {
                 if (existing.type == ZoneType.Junction)
@@ -62,25 +82,36 @@ namespace BusSim.Editor
             root.SetParent(road.transform, false);
 
             float half = road.Settings.HalfRoadWidth;
-            BuildBusStop(road, root, half);
-            BuildSchoolZone(road, root, half);
+            int stops = 0;
+            int schools = 0;
+            foreach (RoadZone zone in zoneList)
+            {
+                if (zone.type == ZoneType.BusStop)
+                {
+                    BuildBusStop(road, root, half, zone.sStart, zone.sEnd, stops++);
+                }
+                else if (zone.type == ZoneType.School)
+                {
+                    BuildSchoolZone(road, root, half, zone.sStart, zone.sEnd, schools++);
+                }
+            }
 
             EditorUtility.SetDirty(zones);
             EditorSceneManager.MarkSceneDirty(road.gameObject.scene);
-            Debug.Log($"BusSim: zones created. Bus stop {BusStopStart}-{BusStopEnd} m, school {SchoolStart}-{SchoolEnd} m.");
+            Debug.Log($"BusSim: zones created. {stops} bus stops, {schools} school zones.");
         }
 
-        private static void BuildBusStop(RoadSampler road, Transform root, float half)
+        private static void BuildBusStop(RoadSampler road, Transform root, float half, float busStopStart, float busStopEnd, int index)
         {
             Material yellow = ObstacleContentBuilder.Mat("ZoneYellow", new Color(0.98f, 0.8f, 0.05f), 0.3f);
             float inner = -half + BayWidth;
-            Ribbon(road, root, "BayEdge", yellow, BusStopStart, BusStopEnd, inner, MarkingWidth, MarkingLift);
-            Ribbon(road, root, "BayStart", yellow, BusStopStart, BusStopStart + MarkingWidth, -half + BayWidth * 0.5f, BayWidth, MarkingLift);
-            Ribbon(road, root, "BayEnd", yellow, BusStopEnd - MarkingWidth, BusStopEnd, -half + BayWidth * 0.5f, BayWidth, MarkingLift);
-            Ribbon(road, root, "BusText", yellow, (BusStopStart + BusStopEnd) * 0.5f - 1.5f, (BusStopStart + BusStopEnd) * 0.5f + 1.5f,
+            Ribbon(road, root, "BayEdge", yellow, busStopStart, busStopEnd, inner, MarkingWidth, MarkingLift);
+            Ribbon(road, root, "BayStart", yellow, busStopStart, busStopStart + MarkingWidth, -half + BayWidth * 0.5f, BayWidth, MarkingLift);
+            Ribbon(road, root, "BayEnd", yellow, busStopEnd - MarkingWidth, busStopEnd, -half + BayWidth * 0.5f, BayWidth, MarkingLift);
+            Ribbon(road, root, "BusText", yellow, (busStopStart + busStopEnd) * 0.5f - 1.5f, (busStopStart + busStopEnd) * 0.5f + 1.5f,
                 -half + BayWidth * 0.5f, 0.9f, MarkingLift);
 
-            float shelterS = (BusStopStart + BusStopEnd) * 0.5f;
+            float shelterS = (busStopStart + busStopEnd) * 0.5f;
             float footpathMiddle = half + road.Settings.footpathWidth * 0.5f;
             Transform shelter = Frame(road, root, "Shelter", shelterS, -footpathMiddle, road.Settings.kerbHeight);
             Material metal = ObstacleContentBuilder.Mat("ShelterMetal", new Color(0.4f, 0.42f, 0.45f), 0.6f);
@@ -98,19 +129,19 @@ namespace BusSim.Editor
                 new Vector3(0.75f, 2.4f, 3.6f), new Vector3(0.05f, 0.45f, 0.6f));
         }
 
-        private static void BuildSchoolZone(RoadSampler road, Transform root, float half)
+        private static void BuildSchoolZone(RoadSampler road, Transform root, float half, float schoolStart, float schoolEnd, int index)
         {
             // Red road surface patches mark the start and end of the school zone. [Likely Singapore practice]
             Material red = ObstacleContentBuilder.Mat("SchoolRed", new Color(0.62f, 0.12f, 0.1f), 0.2f);
-            Ribbon(road, root, "SchoolStartPatch", red, SchoolStart, SchoolStart + PatchLength, 0f, half * 2f, PatchLift);
-            Ribbon(road, root, "SchoolEndPatch", red, SchoolEnd - PatchLength, SchoolEnd, 0f, half * 2f, PatchLift);
+            Ribbon(road, root, "schoolStartPatch", red, schoolStart, schoolStart + PatchLength, 0f, half * 2f, PatchLift);
+            Ribbon(road, root, "schoolEndPatch", red, schoolEnd - PatchLength, schoolEnd, 0f, half * 2f, PatchLift);
 
             Material post = ObstacleContentBuilder.Mat("DarkMetal", new Color(0.15f, 0.15f, 0.16f), 0.5f);
             Material board = ObstacleContentBuilder.Mat("SchoolSign", new Color(0.95f, 0.85f, 0.1f), 0.4f);
             float signT = half + road.Settings.footpathWidth - 0.3f;
             foreach (float side in new[] { -1f, 1f })
             {
-                Transform sign = Frame(road, root, "SchoolSign" + side, SchoolStart - 5f, side * signT, road.Settings.kerbHeight);
+                Transform sign = Frame(road, root, "SchoolSign" + side, schoolStart - 5f, side * signT, road.Settings.kerbHeight);
                 ObstacleContentBuilder.AddBox(sign, "Post", post, new Vector3(0f, 1.1f, 0f), new Vector3(0.07f, 2.2f, 0.07f));
                 ObstacleContentBuilder.AddBox(sign, "Board", board, new Vector3(0f, 2.1f, -0.05f), new Vector3(0.9f, 0.7f, 0.04f));
             }

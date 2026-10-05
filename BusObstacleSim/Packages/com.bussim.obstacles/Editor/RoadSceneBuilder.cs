@@ -43,7 +43,7 @@ namespace BusSim.Editor
             SplineContainer container = road.GetComponent<SplineContainer>();
 
             sampler.Settings = settings;
-            builder.SetMaterials(materials.Asphalt, materials.Marking, materials.Footpath, materials.Ground);
+            builder.SetMaterials(materials.Asphalt, materials.Marking, materials.Footpath, materials.Ground, materials.Grass);
             BuildSpline(container, settings.roadLength);
             builder.Rebuild();
 
@@ -56,7 +56,7 @@ namespace BusSim.Editor
         [MenuItem("BusSim/Road/Reset Spline To Default Shape")]
         public static void ResetSpline()
         {
-            RoadSampler sampler = Object.FindAnyObjectByType<RoadSampler>();
+            RoadSampler sampler = FindMainRoad();
             if (sampler == null || sampler.Settings == null)
             {
                 Debug.LogWarning("BusSim: no road in the scene.");
@@ -73,7 +73,8 @@ namespace BusSim.Editor
         [MenuItem("BusSim/Road/Rebuild Road Meshes")]
         public static void RebuildRoad()
         {
-            RoadMeshBuilder builder = Object.FindAnyObjectByType<RoadMeshBuilder>();
+            RoadSampler main = FindMainRoad();
+            RoadMeshBuilder builder = main != null ? main.GetComponent<RoadMeshBuilder>() : null;
             if (builder == null)
             {
                 Debug.LogWarning("BusSim: no RoadMeshBuilder in the scene.");
@@ -81,6 +82,19 @@ namespace BusSim.Editor
             }
             builder.Rebuild();
             EditorSceneManager.MarkSceneDirty(builder.gameObject.scene);
+        }
+
+        /// <summary>The driven main road: the sampler that is not the junction's side road.</summary>
+        private static RoadSampler FindMainRoad()
+        {
+            foreach (RoadSampler sampler in Object.FindObjectsByType<RoadSampler>())
+            {
+                if (sampler.gameObject.name == RoadObjectName)
+                {
+                    return sampler;
+                }
+            }
+            return Object.FindAnyObjectByType<RoadSampler>();
         }
 
         [MenuItem("BusSim/Road/Setup Procedural Sky")]
@@ -119,17 +133,21 @@ namespace BusSim.Editor
         {
             Spline spline = container.Splines.Count > 0 ? container.Splines[0] : container.AddSpline();
 
-            FillSpline(spline, 1f);
+            // One S-curve per kilometre of road. Each wave starts and ends straight along +Z.
+            int waves = Mathf.Max(1, Mathf.RoundToInt(targetLength / DefaultShapeLength));
+            FillSpline(spline, 1f, waves);
             float scale = targetLength / spline.GetLength();
-            FillSpline(spline, scale);
+            FillSpline(spline, scale, waves);
         }
 
-        private static void FillSpline(Spline spline, float scale)
+        private static void FillSpline(Spline spline, float scale, int waves)
         {
             spline.Clear();
-            for (int i = 0; i < DefaultKnotCount; i++)
+            int knotCount = (DefaultKnotCount - 1) * waves + 1;
+            float shapeLength = DefaultShapeLength * waves;
+            for (int i = 0; i < knotCount; i++)
             {
-                float z = DefaultShapeLength * i / (DefaultKnotCount - 1);
+                float z = shapeLength * i / (knotCount - 1);
                 float phase = Mathf.PI * z / DefaultShapeLength;
                 float x = DefaultSwingMetres * Mathf.Sin(2f * phase) * Mathf.Sin(phase);
                 spline.Add(new BezierKnot(new float3(x, 0f, z) * scale), TangentMode.AutoSmooth);

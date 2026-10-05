@@ -54,6 +54,29 @@ namespace BusSim.Traffic
         [Tooltip("A waiting driver may go if the gap is fine and the line is closer than this.")]
         [Min(1f)] public float goWithin = 12f;
 
+        [Header("Aggressive drivers (both carriageways)")]
+        [Tooltip("Share of the same-direction and oncoming vehicles driven aggressively.")]
+        [Range(0f, 1f)] public float aggressiveShare = 0.3f;
+        [Min(5f)] public float aggressiveMinKmh = 60f;
+        [Min(5f)] public float aggressiveMaxKmh = 85f;
+        [Tooltip("Aggressive drivers keep a short time gap and brake late.")]
+        [Min(0.1f)] public float aggressiveTimeHeadway = 0.6f;
+        [Min(0f)] public float aggressiveMinGap = 1.2f;
+        [Min(0.1f)] public float aggressiveAcceleration = 3.5f;
+        [Tooltip("Aggressive same-direction drivers released behind the driven vehicle, per run.")]
+        [Min(0)] public int chasers = 4;
+        [Tooltip("A chaser appears this far behind the driven vehicle.")]
+        [Min(10f)] public float chaserDistance = 45f;
+        [Tooltip("An aggressive driver tries to change lane when the car ahead is closer than this and slower than it wants to go.")]
+        [Min(5f)] public float overtakeGap = 28f;
+        [Tooltip("Seconds an aggressive driver waits between lane changes.")]
+        [Min(0.5f)] public float laneChangeCooldown = 4f;
+        [Tooltip("Seconds a lane change takes.")]
+        [Min(0.3f)] public float laneChangeSeconds = 1.4f;
+        [Tooltip("Lane change is refused unless the target lane is clear this far ahead and behind (metres, plus speed difference times the gap time).")]
+        [Min(2f)] public float laneChangeClearance = 8f;
+        [Min(0f)] public float laneChangeGapSeconds = 1.5f;
+
         [Header("Vehicles")]
         public List<GameObject> vehiclePrefabs = new List<GameObject>();
     }

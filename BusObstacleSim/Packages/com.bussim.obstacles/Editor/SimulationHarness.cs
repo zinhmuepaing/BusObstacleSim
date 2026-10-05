@@ -173,7 +173,7 @@ namespace BusSim.Editor
                 hits.AppendLine($"  collision: {record.ObstacleId} (event {record.EventIndex}) at {record.Time:F1} s, relative speed {record.RelativeSpeed:F1} m/s, car {record.VehicleSpeed:F1} m/s");
             }
             string trafficLine = traffic != null
-                ? $"Traffic: planned {traffic.Plan.Count}, most active at once {maxTrafficActive}, still active {traffic.ActiveCount}\n"
+                ? $"Traffic: planned {traffic.Plan.Count}, most active at once {maxTrafficActive}, still active {traffic.ActiveCount}, lane changes {traffic.LaneChangesStarted}, chasers released {traffic.ChasersReleased}\n"
                 : "Traffic: none in scene\n";
             return drive + "\n" + trafficLine + hits + Report(spawner, autopilot, stats, steps * dt, brakingSteps * dt, listEvents);
         }

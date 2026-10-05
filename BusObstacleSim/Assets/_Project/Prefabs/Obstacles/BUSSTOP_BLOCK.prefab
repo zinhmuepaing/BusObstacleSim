@@ -378,6 +378,7 @@ MonoBehaviour:
   settleSeconds: 8
   settleSpeed: 0.1
   lostDistance: 30
+  maxPoseLag: 3
 --- !u!114 &5441383739113436178
 MonoBehaviour:
   m_ObjectHideFlags: 0
